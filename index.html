@@ -1,47 +1,89 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Bundesländer</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        button {
-            margin: 5px;
-            padding: 10px 15px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bundesländer</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  background: black;
+  color: white;
+}
+
+header {
+  background-color: rgba(41, 0, 0, 0.85);
+  padding: 1rem 2rem;
+  text-align: center;
+}
+
+h1 {
+  margin: 0;
+  color: #ff4d4d;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.button {
+  background-color: #400000;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.button:hover {
+  background-color: #4d0000;
+  box-shadow: 0 0 15px #ff4d4d;
+  transform: scale(1.05);
+}
+</style>
 </head>
+
 <body>
 
-<h1>Bundesländer</h1>
+<header>
+  <h1>Bundesländer</h1>
+</header>
 
-<button onclick="klick('Baden-Württemberg')">Baden-Württemberg</button>
-<button onclick="klick('Bayern')">Bayern</button>
-<button onclick="klick('Berlin')">Berlin</button>
-<button onclick="klick('Brandenburg')">Brandenburg</button>
-<button onclick="klick('Bremen')">Bremen</button>
-<button onclick="klick('Hamburg')">Hamburg</button>
-<button onclick="klick('Hessen')">Hessen</button>
-<button onclick="klick('Mecklenburg-Vorpommern')">Mecklenburg-Vorpommern</button>
-<button onclick="klick('Niedersachsen')">Niedersachsen</button>
-<button onclick="klick('Nordrhein-Westfalen')">Nordrhein-Westfalen</button>
-<button onclick="klick('Rheinland-Pfalz')">Rheinland-Pfalz</button>
-<button onclick="klick('Saarland')">Saarland</button>
-<button onclick="klick('Sachsen')">Sachsen</button>
-<button onclick="klick('Sachsen-Anhalt')">Sachsen-Anhalt</button>
-<button onclick="klick('Schleswig-Holstein')">Schleswig-Holstein</button>
-<button onclick="klick('Thüringen')">Thüringen</button>
-<button onclick="klick('Weitere')">Weitere</button>
+<div class="container">
+  <div class="button" onclick="klick('Baden-Württemberg')">Baden-Württemberg</div>
+  <div class="button" onclick="klick('Bayern')">Bayern</div>
+  <div class="button" onclick="klick('Berlin')">Berlin</div>
+  <div class="button" onclick="klick('Brandenburg')">Brandenburg</div>
+  <div class="button" onclick="klick('Bremen')">Bremen</div>
+  <div class="button" onclick="klick('Hamburg')">Hamburg</div>
+  <div class="button" onclick="klick('Hessen')">Hessen</div>
+  <div class="button" onclick="klick('Mecklenburg-Vorpommern')">Mecklenburg-Vorpommern</div>
+  <div class="button" onclick="klick('Niedersachsen')">Niedersachsen</div>
+  <div class="button" onclick="klick('Nordrhein-Westfalen')">Nordrhein-Westfalen</div>
+  <div class="button" onclick="klick('Rheinland-Pfalz')">Rheinland-Pfalz</div>
+  <div class="button" onclick="klick('Saarland')">Saarland</div>
+  <div class="button" onclick="klick('Sachsen')">Sachsen</div>
+  <div class="button" onclick="klick('Sachsen-Anhalt')">Sachsen-Anhalt</div>
+  <div class="button" onclick="klick('Schleswig-Holstein')">Schleswig-Holstein</div>
+  <div class="button" onclick="klick('Thüringen')">Thüringen</div>
+  <div class="button" onclick="klick('Weitere')">Weitere</div>
+</div>
 
 <script>
-    function klick(name) {
-        alert("Du hast geklickt: " + name);
-    }
+function klick(name) {
+  alert("Du hast geklickt: " + name);
+}
 </script>
 
 </body>
