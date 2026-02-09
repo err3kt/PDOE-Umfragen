@@ -166,9 +166,9 @@ const data = {
   'date': '01.03.2025', 
   'results': {'CDU': 18, 'SPD': 33.5, 'AfD': 9, 'FDP': 2.5, 'BSW': 2.5, 'Grüne': 16.5, 'Linke': 14, 'Sonstige': 4},
   'history': [
-    {'date': '15.01.2026', 'results': {'CDU': 9, 'SPD': 10, 'AfD': 9, 'FDP': 20, 'BSW': 5, 'Grüne': 21, 'Linke': 18, 'Sonstige': 8}},
-    {'date': '20.12.2025', 'results': {'CDU': 7, 'SPD': 12, 'AfD': 7, 'FDP': 22, 'BSW': 3, 'Grüne': 23, 'Linke': 20, 'Sonstige': 6}},
-    {'date': '05.12.2025', 'results': {'CDU': 10, 'SPD': 9, 'AfD': 10, 'FDP': 19, 'BSW': 6, 'Grüne': 20, 'Linke': 17, 'Sonstige': 9}}
+    {'date': '27.02.2025', 'results': {'CDU': 18, 'SPD': 33, 'AfD': 9, 'FDP': 0, 'BSW': 0, 'Grüne': 17, 'Linke': 12, 'Sonstige': 11}},
+    {'date': '27.02.2025', 'results': {'CDU': 17, 'SPD': 32, 'AfD': 11, 'FDP': 3, 'BSW': 3, 'Grüne': 16, 'Linke': 13, 'Sonstige': 5}},
+    {'date': '20.02.2025', 'results': {'CDU': 17, 'SPD': 32, 'AfD': 10, 'FDP': 3, 'BSW': 3, 'Grüne': 18, 'Linke': 10, 'Sonstige': 7}}
   ]
 }, 
 'Hessen': {
@@ -322,10 +322,8 @@ function showState(state){
     
     const b=document.createElement("div");
     b.className="bar";
-    const targetWidth = (v*12)+"px";
-    if(v > 0) {
-      b.style.minWidth="70px";
-    }
+    // Better scaling for small percentages: base 70px + 10px per percent
+    const targetWidth = (v > 0 ? (70 + v*10) : 0)+"px";
     b.style.background=colors[p];
     b.style.color = (p==="FDP" ? "#000" : "#fff");
     b.textContent = p;
@@ -378,9 +376,10 @@ function showState(state){
     const partiesDiv = document.createElement("div");
     partiesDiv.className = "history-parties";
     
-    // Sort parties by current order
-    entries.forEach(([p]) => {
-      if(h.results[p] !== undefined) {
+    // Sort parties by their historical percentages
+    const historicalEntries = Object.entries(h.results).sort((a,b)=>b[1]-a[1]);
+    historicalEntries.forEach(([p, v]) => {
+      if(v > 0) {
         const partyDiv = document.createElement("div");
         partyDiv.className = "history-party";
         
@@ -390,7 +389,7 @@ function showState(state){
         
         const valueDiv = document.createElement("div");
         valueDiv.className = "history-party-value";
-        valueDiv.textContent = h.results[p] + "%";
+        valueDiv.textContent = v + "%";
         
         partyDiv.appendChild(nameDiv);
         partyDiv.appendChild(valueDiv);
