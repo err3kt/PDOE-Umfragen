@@ -64,7 +64,7 @@ h1 { text-align:center;padding:1rem }
 </style>
 </head>
 <body>
-<h1>Deutschland Umfragen</h1>
+<h1>Deutschland Umfragen (generiert)</h1>
 <div class="main">
 <div class="states" id="states"></div>
 <div class="panel">
@@ -81,7 +81,7 @@ h1 { text-align:center;padding:1rem }
 <script>
 const colors = {
 "CSU":"#008AC5","CDU":"#000000","AfD":"#009EE0","BSW":"#8B1874",
-"SPD":"#E3000F","Grüne":"#64A12D","FDP":"#FFED00","Linke":"#BE3075","Sonstige":"#666"
+"SPD":"#E3000F","Grüne":"#64A12D","FDP":"#FFED00","Linke":"#BE3075","FW":"#EE7D00","Sonstige":"#666"
 };
 
 const logos = {
@@ -93,6 +93,7 @@ const logos = {
 "Grüne":"https://upload.wikimedia.org/wikipedia/commons/6/6a/Logo_B%C3%BCndnis_90-Die_Gr%C3%BCnen.svg",
 "FDP":"https://upload.wikimedia.org/wikipedia/commons/6/6f/FDP_Logo_2015.svg",
 "Linke":"https://upload.wikimedia.org/wikipedia/commons/c/c3/Die_Linke_Logo_2021.svg",
+"FW":"https://upload.wikimedia.org/wikipedia/commons/a/a8/Freie_W%C3%A4hler_Logo.svg",
 "Sonstige":"https://upload.wikimedia.org/wikipedia/commons/8/89/Question_mark.svg"
 };
 
@@ -126,12 +127,12 @@ const data = {
   ]
 }, 
 'Bayern': {
-  'date': '01.02.2026', 
-  'results': {'CSU': 24, 'SPD': 3, 'AfD': 17, 'FDP': 13, 'BSW': 3, 'Grüne': 25, 'Linke': 12, 'Sonstige': 3},
+  'date': '19.01.2026', 
+  'results': {'CSU': 40, 'SPD': 7, 'AfD': 18, 'FDP': 2, 'BSW': 1, 'Grüne': 12, 'FW': 11, 'Linke': 3, 'Sonstige': 6},
   'history': [
-    {'date': '15.01.2026', 'results': {'CSU': 26, 'SPD': 4, 'AfD': 16, 'FDP': 12, 'BSW': 4, 'Grüne': 23, 'Linke': 11, 'Sonstige': 4}},
-    {'date': '20.12.2025', 'results': {'CSU': 25, 'SPD': 5, 'AfD': 18, 'FDP': 11, 'BSW': 5, 'Grüne': 24, 'Linke': 10, 'Sonstige': 2}},
-    {'date': '05.12.2025', 'results': {'CSU': 27, 'SPD': 3, 'AfD': 17, 'FDP': 14, 'BSW': 2, 'Grüne': 22, 'Linke': 13, 'Sonstige': 2}}
+    {'date': '14.01.2026', 'results': {'CSU': 39, 'SPD': 8, 'AfD': 19, 'FDP': 0, 'BSW': 0, 'Grüne': 13, 'FW': 9, 'Linke': 3, 'Sonstige': 9}},
+    {'date': '05.01.2026', 'results': {'CSU': 39, 'SPD': 6, 'AfD': 19, 'FDP': 2, 'BSW': 2, 'Grüne': 11, 'FW': 12, 'Linke': 3, 'Sonstige': 6}},
+    {'date': '17.12.2025', 'results': {'CSU': 37, 'SPD': 8, 'AfD': 21, 'FDP': 2, 'BSW': 2, 'Grüne': 12, 'FW': 10, 'Linke': 4, 'Sonstige': 4}}
   ]
 }, 
 'Berlin': {
