@@ -99,7 +99,7 @@ const logos = {
 
 const stateCoats = {
 "Baden-Württemberg":"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Lesser_coat_of_arms_of_Baden-W%C3%BCrttemberg.svg/960px-Lesser_coat_of_arms_of_Baden-W%C3%BCrttemberg.svg.png",
-"Bayern":"https://upload.wikimedia.org/wikipedia/commons/d/d2/Bayern_Wappen.svg",
+"Bayern":"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Bayern_Wappen.svg/960px-Bayern_Wappen.svg.png",
 "Berlin":"https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/DEU_Berlin_COA.svg/960px-DEU_Berlin_COA.svg.png",
 "Brandenburg":"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/DEU_Brandenburg_COA.svg/960px-DEU_Brandenburg_COA.svg.png",
 "Bremen":"https://upload.wikimedia.org/wikipedia/commons/6/64/Bremen_Wappen%28Mittel%29.svg",
@@ -322,8 +322,10 @@ function showState(state){
     
     const b=document.createElement("div");
     b.className="bar";
-    const targetWidth = (v*5)+"px";
-    b.style.minWidth="50px";
+    const targetWidth = (v*12)+"px";
+    if(v > 0) {
+      b.style.minWidth="70px";
+    }
     b.style.background=colors[p];
     b.style.color = (p==="FDP" ? "#000" : "#fff");
     b.textContent = p;
