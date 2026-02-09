@@ -2,181 +2,407 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<title>Deutschland Umfragen – Dark Mode</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bundesländer</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
 <style>
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
+body { 
+  margin:0;
+  font-family:Inter,sans-serif;
+  background:#121212;
+  color:#e0e0e0;
+  position:relative;
+  overflow-x:hidden;
 }
-
-/* Hintergrund */
-.background {
-  position: fixed;
-  inset: 0;
-  background: url("background.jpg") center/cover no-repeat;
-  filter: blur(8px);
-  transform: scale(1.1);
-  z-index: -1;
+body::before {
+  content:"";
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background-image:url('reichstag.png');
+  background-size:cover;
+  background-position:center;
+  filter:blur(8px) brightness(0.3);
+  z-index:-1;
 }
-
-/* Overlay damit Text lesbar bleibt */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255,255,255,0.75);
-  z-index: -1;
+h1 { text-align:center;padding:1rem }
+.main { display:flex;max-width:1400px;margin:auto;gap:2rem }
+.states { display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;padding:2rem;width:50% }
+.state { background:#1e1e1e;border-radius:16px;padding:1rem;text-align:center;cursor:pointer;transition:all 0.3s ease }
+.state:hover { background:#2a2a2a;transform:translateY(-2px) }
+.state.active { background:#2d2d2d;border:2px solid #4f7fa8 }
+.state img { width:70px;height:70px;object-fit:contain;margin:auto;display:block }
+.state-name { margin-top:0.5rem;font-size:14px;font-weight:600 }
+.panel { width:50%;padding:2rem;background:#181818;position:relative;overflow:hidden }
+.panel::before { content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background-image:var(--bg-coat);background-size:contain;background-repeat:no-repeat;background-position:center;opacity:0.08;pointer-events:none;transition:all 0.5s ease }
+.panel h2 { margin-bottom:0.5rem }
+.panel .date { color:#999;font-size:14px;margin-bottom:1.5rem }
+.bar-row { display:flex;align-items:center;gap:10px;margin:.8rem 0 }
+.party-logo { width:26px;height:26px;object-fit:contain }
+.bar { height:26px;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:13px;font-weight:600;transition:all 0.3s ease;width:0;animation:none }
+.bar.animate { animation:expandBar 0.8s ease-out forwards }
+@keyframes expandBar {
+  from { width:0; opacity:0 }
+  to { opacity:1 }
 }
-
-header {
-  text-align: center;
-  padding: 1rem;
-}
-
-h1 {
-  margin: 0;
-}
-
-/* Container */
-.container {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
-  max-width: 900px;
-  margin: auto;
-  padding: 3rem;
-}
-
-/* Button */
-.state-btn {
-  background: white;
-  border-radius: 16px;
-  padding: 1rem;
-  text-align: center;
-  cursor: pointer;
-  transition: 0.2s;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.state-btn:hover {
-  transform: scale(1.05);
-}
-
-.state-btn img {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  display: block;
-  margin: auto;
-}
-
-.state-name {
-  margin-top: 0.5rem;
-  font-weight: bold;
-}
+.bar:hover { opacity:0.8 }
+.percent { width:100px;text-align:right;font-weight:600 }
+.history-section { margin-top:3rem;padding-top:2rem;border-top:1px solid #333 }
+.history-section h3 { font-size:16px;margin-bottom:1rem;color:#999 }
+.history-row { margin:1.5rem 0;padding:1rem;background:#1e1e1e;border-radius:8px }
+.history-date { font-size:13px;color:#999;margin-bottom:0.8rem }
+.history-parties { display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:0.8rem }
+.history-party { text-align:center }
+.history-party-name { font-size:11px;color:#aaa;margin-bottom:0.2rem }
+.history-party-value { font-size:14px;font-weight:600 }
+.trend { display:inline-block;margin-left:6px;font-size:11px;font-weight:600 }
+.trend.up { color:#4f7a5a }
+.trend.down { color:#a33a3a }
+.trend.same { color:#666 }
 </style>
 </head>
-
 <body>
-
-<div class="background"></div>
-<div class="overlay"></div>
-
-<header>
-  <h1>Bundesländer</h1>
-</header>
-
-<div class="container">
-  <div class="state-btn" onclick="openState('Baden-Württemberg')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Coat_of_arms_of_Baden-W%C3%BCrttemberg.svg">
-    <div class="state-name">Baden-Württemberg</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Bayern')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/2/20/Coat_of_arms_of_Bavaria.svg">
-    <div class="state-name">Bayern</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Berlin')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d9/Coat_of_arms_of_Berlin.svg">
-    <div class="state-name">Berlin</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Brandenburg')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Coat_of_arms_of_Brandenburg.svg">
-    <div class="state-name">Brandenburg</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Bremen')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Coat_of_arms_of_Bremen.svg">
-    <div class="state-name">Bremen</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Hamburg')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/Coat_of_arms_of_Hamburg.svg">
-    <div class="state-name">Hamburg</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Hessen')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Coat_of_arms_of_Hesse.svg">
-    <div class="state-name">Hessen</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Mecklenburg-Vorpommern')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Coat_of_arms_of_Mecklenburg-Western_Pomerania.svg">
-    <div class="state-name">Mecklenburg-Vorpommern</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Niedersachsen')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8b/Coat_of_arms_of_Lower_Saxony.svg">
-    <div class="state-name">Niedersachsen</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Nordrhein-Westfalen')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Coat_of_arms_of_North_Rhine-Westphalia.svg">
-    <div class="state-name">Nordrhein-Westfalen</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Rheinland-Pfalz')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Coat_of_arms_of_Rhineland-Palatinate.svg">
-    <div class="state-name">Rheinland-Pfalz</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Saarland')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Coat_of_arms_of_Saarland.svg">
-    <div class="state-name">Saarland</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Sachsen')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Coat_of_arms_of_Saxony.svg">
-    <div class="state-name">Sachsen</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Sachsen-Anhalt')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Coat_of_arms_of_Saxony-Anhalt.svg">
-    <div class="state-name">Sachsen-Anhalt</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Schleswig-Holstein')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Coat_of_arms_of_Schleswig-Holstein.svg">
-    <div class="state-name">Schleswig-Holstein</div>
-  </div>
-
-  <div class="state-btn" onclick="openState('Thüringen')">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Coat_of_arms_of_Thuringia.svg">
-    <div class="state-name">Thüringen</div>
-  </div>
+<h1>Deutschland Umfragen (generiert)</h1>
+<div class="main">
+<div class="states" id="states"></div>
+<div class="panel">
+<h2 id="title">Bundesland auswählen</h2>
+<div class="date" id="date"></div>
+<div id="bars"></div>
+<div class="history-section">
+<h3>Frühere Umfragen</h3>
+<div id="history"></div>
+</div>
+</div>
 </div>
 
 <script>
-function openState(state) {
-  alert("Ausgewählt: " + state);
-  // hier später Weiterleitung oder Diagramm öffnen
-}
-</script>
+const colors = {
+"CSU":"#008AC5","CDU":"#000000","AfD":"#009EE0","BSW":"#8B1874",
+"SPD":"#E3000F","Grüne":"#64A12D","FDP":"#FFED00","Linke":"#BE3075","Sonstige":"#666"
+};
 
+const logos = {
+"CSU":"https://upload.wikimedia.org/wikipedia/commons/5/55/CSU_Logo_2023.svg",
+"CDU":"https://upload.wikimedia.org/wikipedia/commons/6/6c/CDU_Logo.svg",
+"AfD":"https://upload.wikimedia.org/wikipedia/commons/4/4c/AfD_Logo_2017.svg",
+"BSW":"https://upload.wikimedia.org/wikipedia/commons/6/6b/BSW_Logo.svg",
+"SPD":"https://upload.wikimedia.org/wikipedia/commons/9/9b/Logo_SPD.svg",
+"Grüne":"https://upload.wikimedia.org/wikipedia/commons/6/6a/Logo_B%C3%BCndnis_90-Die_Gr%C3%BCnen.svg",
+"FDP":"https://upload.wikimedia.org/wikipedia/commons/6/6f/FDP_Logo_2015.svg",
+"Linke":"https://upload.wikimedia.org/wikipedia/commons/c/c3/Die_Linke_Logo_2021.svg",
+"Sonstige":"https://upload.wikimedia.org/wikipedia/commons/8/89/Question_mark.svg"
+};
+
+const stateCoats = {
+"Baden-Württemberg":"https://upload.wikimedia.org/wikipedia/commons/7/74/Coat_of_arms_of_Baden-W%C3%BCrttemberg_%28lesser%29.svg",
+"Bayern":"https://upload.wikimedia.org/wikipedia/commons/d/d2/Bayern_Wappen.svg",
+"Berlin":"https://upload.wikimedia.org/wikipedia/commons/e/ec/Coat_of_arms_of_Berlin.svg",
+"Brandenburg":"https://upload.wikimedia.org/wikipedia/commons/4/45/Brandenburg_Wappen.svg",
+"Bremen":"https://upload.wikimedia.org/wikipedia/commons/6/64/Bremen_Wappen%28Mittel%29.svg",
+"Hamburg":"https://upload.wikimedia.org/wikipedia/commons/6/6d/Coat_of_arms_of_Hamburg.svg",
+"Hessen":"https://upload.wikimedia.org/wikipedia/commons/c/cd/Coat_of_arms_of_Hesse.svg",
+"Mecklenburg-Vorpommern":"https://upload.wikimedia.org/wikipedia/commons/7/74/Coat_of_arms_of_Mecklenburg-Western_Pomerania_%28great%29.svg",
+"Niedersachsen":"https://upload.wikimedia.org/wikipedia/commons/0/0b/Coat_of_arms_of_Lower_Saxony.svg",
+"Nordrhein-Westfalen":"https://upload.wikimedia.org/wikipedia/commons/b/bb/Coat_of_arms_of_North_Rhine-Westfalia.svg",
+"Rheinland-Pfalz":"https://upload.wikimedia.org/wikipedia/commons/8/89/Coat_of_arms_of_Rhineland-Palatinate.svg",
+"Saarland":"https://upload.wikimedia.org/wikipedia/commons/8/8e/Wappen_des_Saarlands.svg",
+"Sachsen":"https://upload.wikimedia.org/wikipedia/commons/5/5f/Coat_of_arms_of_Saxony.svg",
+"Sachsen-Anhalt":"https://upload.wikimedia.org/wikipedia/commons/5/53/Wappen_Sachsen-Anhalt.svg",
+"Schleswig-Holstein":"https://upload.wikimedia.org/wikipedia/commons/e/e7/Coat_of_arms_of_Schleswig-Holstein.svg",
+"Thüringen":"https://upload.wikimedia.org/wikipedia/commons/8/80/Coat_of_arms_of_Thuringia.svg"
+};
+
+const data = {
+'Baden-Württemberg': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 16, 'SPD': 16, 'AfD': 13, 'FDP': 4, 'BSW': 16, 'Grüne': 8, 'Linke': 11, 'Sonstige': 16},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 18, 'SPD': 14, 'AfD': 12, 'FDP': 5, 'BSW': 15, 'Grüne': 9, 'Linke': 10, 'Sonstige': 17}},
+    {'date': '20.12.2025', 'results': {'CDU': 17, 'SPD': 15, 'AfD': 14, 'FDP': 4, 'BSW': 14, 'Grüne': 10, 'Linke': 12, 'Sonstige': 14}},
+    {'date': '05.12.2025', 'results': {'CDU': 19, 'SPD': 13, 'AfD': 13, 'FDP': 6, 'BSW': 13, 'Grüne': 11, 'Linke': 9, 'Sonstige': 16}}
+  ]
+}, 
+'Bayern': {
+  'date': '01.02.2026', 
+  'results': {'CSU': 24, 'SPD': 3, 'AfD': 17, 'FDP': 13, 'BSW': 3, 'Grüne': 25, 'Linke': 12, 'Sonstige': 3},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CSU': 26, 'SPD': 4, 'AfD': 16, 'FDP': 12, 'BSW': 4, 'Grüne': 23, 'Linke': 11, 'Sonstige': 4}},
+    {'date': '20.12.2025', 'results': {'CSU': 25, 'SPD': 5, 'AfD': 18, 'FDP': 11, 'BSW': 5, 'Grüne': 24, 'Linke': 10, 'Sonstige': 2}},
+    {'date': '05.12.2025', 'results': {'CSU': 27, 'SPD': 3, 'AfD': 17, 'FDP': 14, 'BSW': 2, 'Grüne': 22, 'Linke': 13, 'Sonstige': 2}}
+  ]
+}, 
+'Berlin': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 8, 'SPD': 20, 'AfD': 18, 'FDP': 17, 'BSW': 4, 'Grüne': 6, 'Linke': 14, 'Sonstige': 13},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 9, 'SPD': 19, 'AfD': 17, 'FDP': 16, 'BSW': 5, 'Grüne': 7, 'Linke': 15, 'Sonstige': 12}},
+    {'date': '20.12.2025', 'results': {'CDU': 7, 'SPD': 21, 'AfD': 19, 'FDP': 15, 'BSW': 4, 'Grüne': 8, 'Linke': 13, 'Sonstige': 13}},
+    {'date': '05.12.2025', 'results': {'CDU': 10, 'SPD': 18, 'AfD': 16, 'FDP': 18, 'BSW': 6, 'Grüne': 5, 'Linke': 16, 'Sonstige': 11}}
+  ]
+}, 
+'Brandenburg': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 14, 'SPD': 11, 'AfD': 18, 'FDP': 3, 'BSW': 14, 'Grüne': 19, 'Linke': 13, 'Sonstige': 8},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 13, 'SPD': 12, 'AfD': 17, 'FDP': 4, 'BSW': 15, 'Grüne': 18, 'Linke': 14, 'Sonstige': 7}},
+    {'date': '20.12.2025', 'results': {'CDU': 15, 'SPD': 10, 'AfD': 19, 'FDP': 3, 'BSW': 13, 'Grüne': 20, 'Linke': 12, 'Sonstige': 8}},
+    {'date': '05.12.2025', 'results': {'CDU': 14, 'SPD': 13, 'AfD': 16, 'FDP': 5, 'BSW': 16, 'Grüne': 17, 'Linke': 11, 'Sonstige': 8}}
+  ]
+}, 
+'Bremen': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 16, 'SPD': 12, 'AfD': 8, 'FDP': 8, 'BSW': 10, 'Grüne': 19, 'Linke': 8, 'Sonstige': 19},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 15, 'SPD': 13, 'AfD': 9, 'FDP': 7, 'BSW': 11, 'Grüne': 18, 'Linke': 9, 'Sonstige': 18}},
+    {'date': '20.12.2025', 'results': {'CDU': 17, 'SPD': 11, 'AfD': 7, 'FDP': 9, 'BSW': 9, 'Grüne': 20, 'Linke': 7, 'Sonstige': 20}},
+    {'date': '05.12.2025', 'results': {'CDU': 14, 'SPD': 14, 'AfD': 10, 'FDP': 6, 'BSW': 12, 'Grüne': 17, 'Linke': 10, 'Sonstige': 17}}
+  ]
+}, 
+'Hamburg': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 8, 'SPD': 11, 'AfD': 8, 'FDP': 21, 'BSW': 4, 'Grüne': 22, 'Linke': 19, 'Sonstige': 7},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 9, 'SPD': 10, 'AfD': 9, 'FDP': 20, 'BSW': 5, 'Grüne': 21, 'Linke': 18, 'Sonstige': 8}},
+    {'date': '20.12.2025', 'results': {'CDU': 7, 'SPD': 12, 'AfD': 7, 'FDP': 22, 'BSW': 3, 'Grüne': 23, 'Linke': 20, 'Sonstige': 6}},
+    {'date': '05.12.2025', 'results': {'CDU': 10, 'SPD': 9, 'AfD': 10, 'FDP': 19, 'BSW': 6, 'Grüne': 20, 'Linke': 17, 'Sonstige': 9}}
+  ]
+}, 
+'Hessen': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 19, 'SPD': 8, 'AfD': 15, 'FDP': 13, 'BSW': 4, 'Grüne': 18, 'Linke': 4, 'Sonstige': 19},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 18, 'SPD': 9, 'AfD': 14, 'FDP': 12, 'BSW': 5, 'Grüne': 19, 'Linke': 5, 'Sonstige': 18}},
+    {'date': '20.12.2025', 'results': {'CDU': 20, 'SPD': 7, 'AfD': 16, 'FDP': 14, 'BSW': 3, 'Grüne': 17, 'Linke': 3, 'Sonstige': 20}},
+    {'date': '05.12.2025', 'results': {'CDU': 17, 'SPD': 10, 'AfD': 13, 'FDP': 11, 'BSW': 6, 'Grüne': 20, 'Linke': 6, 'Sonstige': 17}}
+  ]
+}, 
+'Mecklenburg-Vorpommern': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 12, 'SPD': 16, 'AfD': 11, 'FDP': 10, 'BSW': 19, 'Grüne': 6, 'Linke': 21, 'Sonstige': 5},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 13, 'SPD': 15, 'AfD': 12, 'FDP': 9, 'BSW': 18, 'Grüne': 7, 'Linke': 20, 'Sonstige': 6}},
+    {'date': '20.12.2025', 'results': {'CDU': 11, 'SPD': 17, 'AfD': 10, 'FDP': 11, 'BSW': 20, 'Grüne': 5, 'Linke': 22, 'Sonstige': 4}},
+    {'date': '05.12.2025', 'results': {'CDU': 14, 'SPD': 14, 'AfD': 13, 'FDP': 8, 'BSW': 17, 'Grüne': 8, 'Linke': 19, 'Sonstige': 7}}
+  ]
+}, 
+'Niedersachsen': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 14, 'SPD': 14, 'AfD': 12, 'FDP': 14, 'BSW': 4, 'Grüne': 14, 'Linke': 16, 'Sonstige': 12},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 15, 'SPD': 13, 'AfD': 11, 'FDP': 13, 'BSW': 5, 'Grüne': 15, 'Linke': 15, 'Sonstige': 13}},
+    {'date': '20.12.2025', 'results': {'CDU': 13, 'SPD': 15, 'AfD': 13, 'FDP': 15, 'BSW': 3, 'Grüne': 13, 'Linke': 17, 'Sonstige': 11}},
+    {'date': '05.12.2025', 'results': {'CDU': 16, 'SPD': 12, 'AfD': 10, 'FDP': 12, 'BSW': 6, 'Grüne': 16, 'Linke': 14, 'Sonstige': 14}}
+  ]
+}, 
+'Nordrhein-Westfalen': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 12, 'SPD': 16, 'AfD': 7, 'FDP': 20, 'BSW': 12, 'Grüne': 18, 'Linke': 10, 'Sonstige': 5},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 13, 'SPD': 15, 'AfD': 8, 'FDP': 19, 'BSW': 11, 'Grüne': 19, 'Linke': 11, 'Sonstige': 4}},
+    {'date': '20.12.2025', 'results': {'CDU': 11, 'SPD': 17, 'AfD': 6, 'FDP': 21, 'BSW': 13, 'Grüne': 17, 'Linke': 9, 'Sonstige': 6}},
+    {'date': '05.12.2025', 'results': {'CDU': 14, 'SPD': 14, 'AfD': 9, 'FDP': 18, 'BSW': 10, 'Grüne': 20, 'Linke': 12, 'Sonstige': 3}}
+  ]
+}, 
+'Rheinland-Pfalz': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 14, 'SPD': 3, 'AfD': 10, 'FDP': 8, 'BSW': 18, 'Grüne': 8, 'Linke': 13, 'Sonstige': 26},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 15, 'SPD': 4, 'AfD': 9, 'FDP': 7, 'BSW': 17, 'Grüne': 9, 'Linke': 14, 'Sonstige': 25}},
+    {'date': '20.12.2025', 'results': {'CDU': 13, 'SPD': 2, 'AfD': 11, 'FDP': 9, 'BSW': 19, 'Grüne': 7, 'Linke': 12, 'Sonstige': 27}},
+    {'date': '05.12.2025', 'results': {'CDU': 16, 'SPD': 5, 'AfD': 8, 'FDP': 6, 'BSW': 16, 'Grüne': 10, 'Linke': 15, 'Sonstige': 24}}
+  ]
+}, 
+'Saarland': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 22, 'SPD': 9, 'AfD': 8, 'FDP': 6, 'BSW': 18, 'Grüne': 12, 'Linke': 18, 'Sonstige': 7},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 21, 'SPD': 10, 'AfD': 9, 'FDP': 5, 'BSW': 17, 'Grüne': 13, 'Linke': 17, 'Sonstige': 8}},
+    {'date': '20.12.2025', 'results': {'CDU': 23, 'SPD': 8, 'AfD': 7, 'FDP': 7, 'BSW': 19, 'Grüne': 11, 'Linke': 19, 'Sonstige': 6}},
+    {'date': '05.12.2025', 'results': {'CDU': 20, 'SPD': 11, 'AfD': 10, 'FDP': 4, 'BSW': 16, 'Grüne': 14, 'Linke': 16, 'Sonstige': 9}}
+  ]
+}, 
+'Sachsen': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 10, 'SPD': 8, 'AfD': 11, 'FDP': 4, 'BSW': 16, 'Grüne': 23, 'Linke': 15, 'Sonstige': 13},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 11, 'SPD': 7, 'AfD': 12, 'FDP': 5, 'BSW': 15, 'Grüne': 22, 'Linke': 16, 'Sonstige': 12}},
+    {'date': '20.12.2025', 'results': {'CDU': 9, 'SPD': 9, 'AfD': 10, 'FDP': 3, 'BSW': 17, 'Grüne': 24, 'Linke': 14, 'Sonstige': 14}},
+    {'date': '05.12.2025', 'results': {'CDU': 12, 'SPD': 6, 'AfD': 13, 'FDP': 6, 'BSW': 14, 'Grüne': 21, 'Linke': 17, 'Sonstige': 11}}
+  ]
+}, 
+'Sachsen-Anhalt': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 5, 'SPD': 22, 'AfD': 12, 'FDP': 9, 'BSW': 15, 'Grüne': 17, 'Linke': 9, 'Sonstige': 11},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 6, 'SPD': 21, 'AfD': 13, 'FDP': 8, 'BSW': 14, 'Grüne': 18, 'Linke': 10, 'Sonstige': 10}},
+    {'date': '20.12.2025', 'results': {'CDU': 4, 'SPD': 23, 'AfD': 11, 'FDP': 10, 'BSW': 16, 'Grüne': 16, 'Linke': 8, 'Sonstige': 12}},
+    {'date': '05.12.2025', 'results': {'CDU': 7, 'SPD': 20, 'AfD': 14, 'FDP': 7, 'BSW': 13, 'Grüne': 19, 'Linke': 11, 'Sonstige': 9}}
+  ]
+}, 
+'Schleswig-Holstein': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 17, 'SPD': 4, 'AfD': 10, 'FDP': 15, 'BSW': 17, 'Grüne': 14, 'Linke': 20, 'Sonstige': 3},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 16, 'SPD': 5, 'AfD': 11, 'FDP': 14, 'BSW': 16, 'Grüne': 15, 'Linke': 19, 'Sonstige': 4}},
+    {'date': '20.12.2025', 'results': {'CDU': 18, 'SPD': 3, 'AfD': 9, 'FDP': 16, 'BSW': 18, 'Grüne': 13, 'Linke': 21, 'Sonstige': 2}},
+    {'date': '05.12.2025', 'results': {'CDU': 15, 'SPD': 6, 'AfD': 12, 'FDP': 13, 'BSW': 15, 'Grüne': 16, 'Linke': 18, 'Sonstige': 5}}
+  ]
+}, 
+'Thüringen': {
+  'date': '01.02.2026', 
+  'results': {'CDU': 10, 'SPD': 10, 'AfD': 16, 'FDP': 15, 'BSW': 16, 'Grüne': 12, 'Linke': 8, 'Sonstige': 13},
+  'history': [
+    {'date': '15.01.2026', 'results': {'CDU': 11, 'SPD': 9, 'AfD': 15, 'FDP': 14, 'BSW': 17, 'Grüne': 13, 'Linke': 9, 'Sonstige': 12}},
+    {'date': '20.12.2025', 'results': {'CDU': 9, 'SPD': 11, 'AfD': 17, 'FDP': 16, 'BSW': 15, 'Grüne': 11, 'Linke': 7, 'Sonstige': 14}},
+    {'date': '05.12.2025', 'results': {'CDU': 12, 'SPD': 8, 'AfD': 14, 'FDP': 13, 'BSW': 18, 'Grüne': 14, 'Linke': 10, 'Sonstige': 11}}
+  ]
+}
+};
+
+let currentState = null;
+
+function buildStates(){
+  const c=document.getElementById("states");
+  Object.keys(data).forEach(s=>{
+    const d=document.createElement("div");
+    d.className="state";
+    d.onclick=()=>showState(s);
+    const img=document.createElement("img");
+    img.src=stateCoats[s];
+    img.alt=s+" Wappen";
+    const name=document.createElement("div");
+    name.className="state-name";
+    name.textContent=s;
+    d.appendChild(img);
+    d.appendChild(name);
+    c.appendChild(d);
+  });
+}
+
+function showState(state){
+  // Update active state
+  if(currentState) {
+    const prevStates = document.querySelectorAll('.state');
+    prevStates.forEach(s => s.classList.remove('active'));
+  }
+  currentState = state;
+  const states = document.querySelectorAll('.state');
+  states.forEach((s, i) => {
+    if(Object.keys(data)[i] === state) {
+      s.classList.add('active');
+    }
+  });
+
+  // Update background coat of arms
+  const panel = document.querySelector('.panel');
+  panel.style.setProperty('--bg-coat', `url(${stateCoats[state]})`);
+
+  const bars=document.getElementById("bars");
+  bars.innerHTML="";
+  document.getElementById("title").innerText=state;
+  document.getElementById("date").innerText="Stand: "+data[state].date;
+  
+  // Calculate trends from most recent history
+  const currentResults = data[state].results;
+  const previousResults = data[state].history[0].results;
+  
+  let entries=Object.entries(currentResults).sort((a,b)=>b[1]-a[1]);
+  entries.forEach(([p,v], index)=>{
+    const r=document.createElement("div");
+    r.className="bar-row";
+    
+    const logo=document.createElement("img");
+    logo.src=logos[p];
+    logo.className="party-logo";
+    logo.alt=p+" Logo";
+    
+    const b=document.createElement("div");
+    b.className="bar";
+    const targetWidth = (v*5)+"px";
+    b.style.minWidth="50px";
+    b.style.background=colors[p];
+    b.style.color = (p==="FDP" ? "#000" : "#fff");
+    b.textContent = p;
+    
+    // Calculate exact percentage difference
+    const prevValue = previousResults[p] || 0;
+    const diff = v - prevValue;
+    let trendText = '';
+    let trendClass = 'same';
+    
+    if(diff > 0) { 
+      trendText = '+' + diff + '%'; 
+      trendClass = 'up'; 
+    } else if(diff < 0) { 
+      trendText = diff + '%'; 
+      trendClass = 'down'; 
+    } else {
+      trendText = '±0%';
+    }
+    
+    // Trigger animation with delay
+    setTimeout(() => {
+      b.classList.add('animate');
+      b.style.width = targetWidth;
+    }, index * 100);
+    
+    const pc=document.createElement("div");
+    pc.className="percent";
+    pc.innerHTML = v+'% <span class="trend '+trendClass+'">'+trendText+'</span>';
+    
+    r.appendChild(logo);
+    r.appendChild(b);
+    r.appendChild(pc);
+    bars.appendChild(r);
+  });
+  
+  // Display historical data
+  const historyDiv = document.getElementById("history");
+  historyDiv.innerHTML = "";
+  
+  data[state].history.forEach(h => {
+    const row = document.createElement("div");
+    row.className = "history-row";
+    
+    const dateDiv = document.createElement("div");
+    dateDiv.className = "history-date";
+    dateDiv.textContent = h.date;
+    row.appendChild(dateDiv);
+    
+    const partiesDiv = document.createElement("div");
+    partiesDiv.className = "history-parties";
+    
+    // Sort parties by current order
+    entries.forEach(([p]) => {
+      if(h.results[p] !== undefined) {
+        const partyDiv = document.createElement("div");
+        partyDiv.className = "history-party";
+        
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "history-party-name";
+        nameDiv.textContent = p;
+        
+        const valueDiv = document.createElement("div");
+        valueDiv.className = "history-party-value";
+        valueDiv.textContent = h.results[p] + "%";
+        
+        partyDiv.appendChild(nameDiv);
+        partyDiv.appendChild(valueDiv);
+        partiesDiv.appendChild(partyDiv);
+      }
+    });
+    
+    row.appendChild(partiesDiv);
+    historyDiv.appendChild(row);
+  });
+}
+
+buildStates();
+// Show first state by default
+showState(Object.keys(data)[0]);
+</script>
 </body>
 </html>
