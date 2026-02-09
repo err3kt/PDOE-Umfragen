@@ -8,81 +8,173 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-* {
-  box-sizing: border-box;
-}
 body {
-  font-family: 'Inter', sans-serif;
   margin: 0;
-  background: black;
-  color: white;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Hintergrund */
+.background {
+  position: fixed;
+  inset: 0;
+  background: url("background.jpg") center/cover no-repeat;
+  filter: blur(8px);
+  transform: scale(1.1);
+  z-index: -1;
+}
+
+/* Overlay damit Text lesbar bleibt */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.75);
+  z-index: -1;
 }
 
 header {
-  background-color: rgba(41, 0, 0, 0.85);
-  padding: 1rem 2rem;
   text-align: center;
+  padding: 1rem;
 }
 
 h1 {
   margin: 0;
-  color: #ff4d4d;
 }
 
+/* Container */
 .container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  padding: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  max-width: 900px;
+  margin: auto;
+  padding: 3rem;
 }
 
-.button {
-  background-color: #400000;
-  border-radius: 10px;
+/* Button */
+.state-btn {
+  background: white;
+  border-radius: 16px;
   padding: 1rem;
   text-align: center;
   cursor: pointer;
   transition: 0.2s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-.button:hover {
-  background-color: #4d0000;
-  box-shadow: 0 0 15px #ff4d4d;
+.state-btn:hover {
   transform: scale(1.05);
+}
+
+.state-btn img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  display: block;
+  margin: auto;
+}
+
+.state-name {
+  margin-top: 0.5rem;
+  font-weight: bold;
 }
 </style>
 </head>
 
 <body>
 
+<div class="background"></div>
+<div class="overlay"></div>
+
 <header>
   <h1>Bundesländer</h1>
 </header>
 
 <div class="container">
-  <div class="button" onclick="klick('Baden-Württemberg')">Baden-Württemberg</div>
-  <div class="button" onclick="klick('Bayern')">Bayern</div>
-  <div class="button" onclick="klick('Berlin')">Berlin</div>
-  <div class="button" onclick="klick('Brandenburg')">Brandenburg</div>
-  <div class="button" onclick="klick('Bremen')">Bremen</div>
-  <div class="button" onclick="klick('Hamburg')">Hamburg</div>
-  <div class="button" onclick="klick('Hessen')">Hessen</div>
-  <div class="button" onclick="klick('Mecklenburg-Vorpommern')">Mecklenburg-Vorpommern</div>
-  <div class="button" onclick="klick('Niedersachsen')">Niedersachsen</div>
-  <div class="button" onclick="klick('Nordrhein-Westfalen')">Nordrhein-Westfalen</div>
-  <div class="button" onclick="klick('Rheinland-Pfalz')">Rheinland-Pfalz</div>
-  <div class="button" onclick="klick('Saarland')">Saarland</div>
-  <div class="button" onclick="klick('Sachsen')">Sachsen</div>
-  <div class="button" onclick="klick('Sachsen-Anhalt')">Sachsen-Anhalt</div>
-  <div class="button" onclick="klick('Schleswig-Holstein')">Schleswig-Holstein</div>
-  <div class="button" onclick="klick('Thüringen')">Thüringen</div>
-  <div class="button" onclick="klick('Weitere')">Weitere</div>
+  <div class="state-btn" onclick="openState('Baden-Württemberg')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Coat_of_arms_of_Baden-W%C3%BCrttemberg.svg">
+    <div class="state-name">Baden-Württemberg</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Bayern')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/20/Coat_of_arms_of_Bavaria.svg">
+    <div class="state-name">Bayern</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Berlin')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d9/Coat_of_arms_of_Berlin.svg">
+    <div class="state-name">Berlin</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Brandenburg')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Coat_of_arms_of_Brandenburg.svg">
+    <div class="state-name">Brandenburg</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Bremen')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9e/Coat_of_arms_of_Bremen.svg">
+    <div class="state-name">Bremen</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Hamburg')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/Coat_of_arms_of_Hamburg.svg">
+    <div class="state-name">Hamburg</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Hessen')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Coat_of_arms_of_Hesse.svg">
+    <div class="state-name">Hessen</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Mecklenburg-Vorpommern')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Coat_of_arms_of_Mecklenburg-Western_Pomerania.svg">
+    <div class="state-name">Mecklenburg-Vorpommern</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Niedersachsen')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8b/Coat_of_arms_of_Lower_Saxony.svg">
+    <div class="state-name">Niedersachsen</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Nordrhein-Westfalen')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Coat_of_arms_of_North_Rhine-Westphalia.svg">
+    <div class="state-name">Nordrhein-Westfalen</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Rheinland-Pfalz')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Coat_of_arms_of_Rhineland-Palatinate.svg">
+    <div class="state-name">Rheinland-Pfalz</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Saarland')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Coat_of_arms_of_Saarland.svg">
+    <div class="state-name">Saarland</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Sachsen')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Coat_of_arms_of_Saxony.svg">
+    <div class="state-name">Sachsen</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Sachsen-Anhalt')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Coat_of_arms_of_Saxony-Anhalt.svg">
+    <div class="state-name">Sachsen-Anhalt</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Schleswig-Holstein')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Coat_of_arms_of_Schleswig-Holstein.svg">
+    <div class="state-name">Schleswig-Holstein</div>
+  </div>
+
+  <div class="state-btn" onclick="openState('Thüringen')">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Coat_of_arms_of_Thuringia.svg">
+    <div class="state-name">Thüringen</div>
+  </div>
 </div>
 
 <script>
-function klick(name) {
-  alert("Du hast geklickt: " + name);
+function openState(state) {
+  alert("Ausgewählt: " + state);
+  // hier später Weiterleitung oder Diagramm öffnen
 }
 </script>
 
