@@ -725,8 +725,8 @@ function showState(state){
     
     const b=document.createElement("div");
     b.className="bar";
-    // Better scaling for small percentages: base 70px + 10px per percent
-    const targetWidth = (v > 0 ? (70 + v*10) : 0)+"px";
+    // Proportional scaling: each 1% = ~15px width for better visual comparison
+    const targetWidth = v > 0 ? Math.max(40, v * 15) + "px" : "0px";
     b.style.background=colors[p];
     b.style.color = (p==="FDP" ? "#000" : "#fff");
     b.textContent = p;
@@ -874,8 +874,8 @@ function showBundestag() {
     
     const b = document.createElement("div");
     b.className = "bar";
-    // Better scaling for small percentages: base 70px + 10px per percent
-    const targetWidth = (v > 0 ? (70 + v * 10) : 0) + "px";
+    // Proportional scaling: each 1% = ~15px width for better visual comparison
+    const targetWidth = v > 0 ? Math.max(40, v * 15) + "px" : "0px";
     b.style.background = colors[p];
     b.style.color = (p === "FDP" ? "#000" : "#fff");
     b.textContent = p;
@@ -976,12 +976,16 @@ if(newest.date) {
 }
 
 // Show first state by default (which is now the newest after sorting)
+// Only on desktop - don't auto-open modal on mobile
 const sortedStateKeys = Object.keys(data).sort((a, b) => {
   const dateA = parseDate(data[a].date);
   const dateB = parseDate(data[b].date);
   return dateB - dateA;
 });
-showState(sortedStateKeys[0]);
+// Only show state on desktop (avoid auto-opening modal on mobile)
+if(window.innerWidth > 1024) {
+  showState(sortedStateKeys[0]);
+}
 
 // Seat distribution and coalition calculator functions
 function calculateSeats(results, totalSeats) {
@@ -1366,8 +1370,8 @@ function openStateModal(state) {
     
     const b = document.createElement("div");
     b.className = "bar";
-    // Better scaling for small percentages: base 70px + 10px per percent
-    const targetWidth = (v > 0 ? (70 + v*10) : 0) + "px";
+    // Proportional scaling: each 1% = ~15px width for better visual comparison
+    const targetWidth = v > 0 ? Math.max(40, v * 15) + "px" : "0px";
     b.style.background = colors[p];
     b.style.color = (p === "FDP" ? "#000" : "#fff");
     b.textContent = p;
