@@ -49,7 +49,7 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
 .panel::before { content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background-image:var(--bg-coat);background-size:contain;background-repeat:no-repeat;background-position:center;opacity:0.08;pointer-events:none;transition:all 0.5s ease }
 .panel h2 { margin-bottom:0.5rem }
 .panel .date { color:#999;font-size:14px;margin-bottom:1.5rem }
-.bar-row { display:flex;align-items:center;gap:10px;margin:.8rem 0;position:relative;z-index:1 }
+.bar-row { display:flex;align-items:center;gap:10px;margin:1.2rem 0;position:relative;z-index:1 }
 .party-logo { width:26px;height:26px;object-fit:contain }
 .bar { height:26px;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:13px;font-weight:600;transition:all 0.3s ease;width:0;animation:none }
 .bar.animate { animation:expandBar 0.8s ease-out forwards }
@@ -76,12 +76,12 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
 #elections-2026::-webkit-scrollbar-track { background:#121212;border-radius:4px }
 #elections-2026::-webkit-scrollbar-thumb { background:#3a3a3a;border-radius:4px }
 #elections-2026::-webkit-scrollbar-thumb:hover { background:#4a4a4a }
-.election-item { display:flex;align-items:center;gap:12px;margin:1rem 0;padding:0.8rem;background:#2a2a2a;border-radius:8px;position:relative;z-index:1 }
-.election-coat { width:40px;height:40px;object-fit:contain }
-.election-info { flex:1 }
-.election-state { font-weight:600;font-size:14px;margin-bottom:2px }
+.election-item { display:flex;align-items:center;gap:12px;margin:1rem 0;padding:0.8rem;background:#2a2a2a;border-radius:8px;position:relative;z-index:1;flex-wrap:wrap }
+.election-coat { width:40px;height:40px;object-fit:contain;flex-shrink:0 }
+.election-info { flex:1;min-width:0 }
+.election-state { font-weight:600;font-size:14px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis }
 .election-type { font-size:12px;color:#999 }
-.election-date { font-size:13px;color:#aaa;white-space:nowrap }
+.election-date { font-size:13px;color:#aaa;white-space:normal;flex-shrink:0;width:100%;margin-top:4px }
 .seats-btn { background:#4f7fa8;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;margin-top:1rem;transition:all 0.3s ease;position:relative;z-index:1 }
 .seats-btn:hover { background:#5a8bb8;transform:translateY(-1px) }
 .modal-overlay { display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center }
@@ -111,6 +111,99 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
 .coalition-stat { text-align:center }
 .coalition-stat-value { font-size:24px;font-weight:600;color:#4f7fa8 }
 .coalition-stat-label { font-size:12px;color:#999;margin-top:0.3rem }
+
+/* State Data Modal for Mobile */
+.state-modal-overlay { display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#181818;z-index:2000;overflow-y:auto }
+.state-modal-overlay.active { display:block }
+.state-modal-header { display:flex;justify-content:space-between;align-items:center;padding:1rem;border-bottom:1px solid #333;position:sticky;top:0;background:#181818;z-index:10 }
+.state-modal-header h2 { margin:0;font-size:18px }
+.state-modal-body { padding:1.5rem }
+.state-modal-body .date { color:#999;font-size:14px;margin-bottom:1.5rem }
+
+/* Mobile Optimizations */
+@media screen and (max-width: 1024px) {
+  .bundestag-section { padding:0 1rem }
+  .bundestag-container { grid-template-columns:1fr !important }
+  .main { flex-direction:column;gap:0 }
+  .states { width:100%;padding:1rem;grid-template-columns:repeat(3,1fr);gap:1rem }
+  .panel { width:100%;padding:1.5rem }
+  .modal-body { grid-template-columns:1fr;gap:1rem;padding:1rem }
+  .modal-content { width:95%;max-width:none }
+}
+
+@media screen and (max-width: 768px) {
+  h1 { font-size:24px;padding:0.8rem }
+  .bundestag-section { padding:0 0.5rem }
+  .bundestag-container { padding:1rem }
+  .bundestag-container h2 { font-size:16px }
+  .states { grid-template-columns:repeat(2,1fr);gap:0.8rem;padding:0.8rem }
+  .state { min-height:120px;padding:0.8rem }
+  .state img { width:50px;height:50px }
+  .state-name { font-size:12px }
+  .panel { padding:1rem }
+  .panel h2 { font-size:18px }
+  .bar-row { gap:6px;margin:1rem 0 }
+  .party-logo { width:22px;height:22px }
+  .bar { height:22px;font-size:11px;padding-left:6px }
+  .percent { width:70px;font-size:12px }
+  .modal-header { padding:1rem }
+  .modal-header h2 { font-size:16px }
+  .modal-body { padding:0.8rem }
+  .modal-section { padding:1rem }
+  .seats-grid { min-height:200px }
+  .coalition-stat-value { font-size:20px }
+  .election-item { gap:8px;padding:0.6rem }
+  .election-coat { width:32px;height:32px }
+  .election-state { font-size:13px }
+  .election-type { font-size:11px }
+  .election-date { font-size:12px }
+}
+
+@media screen and (max-width: 480px) {
+  h1 { font-size:20px;padding:0.5rem }
+  .bundestag-section { margin-bottom:1rem }
+  .states { grid-template-columns:repeat(2,1fr);gap:0.5rem;padding:0.5rem }
+  .state { min-height:100px;padding:0.6rem }
+  .state img { width:40px;height:40px }
+  .state-name { font-size:11px }
+  .panel { padding:0.8rem }
+  .panel h2 { font-size:16px }
+  .bar-row { margin:0.9rem 0 }
+  .bar { height:20px;font-size:10px }
+  .party-logo { width:20px;height:20px }
+  .percent { width:60px;font-size:11px }
+  .history-parties { grid-template-columns:repeat(auto-fit,minmax(60px,1fr)) }
+  .modal-header { padding:0.8rem }
+  .modal-header h2 { font-size:14px }
+  .close-btn { padding:6px 12px;font-size:12px }
+  .seats-btn { padding:6px 12px;font-size:11px }
+  .coalition-party { padding:0.6rem;gap:8px }
+  .party-seat-logo { width:20px;height:20px }
+  .party-seat-name { font-size:12px }
+  .party-seat-count { font-size:12px }
+  .coalition-stat-value { font-size:18px }
+  .coalition-stat-label { font-size:11px }
+  .election-item { gap:6px;padding:0.6rem }
+  .election-coat { width:28px;height:28px }
+  .election-state { font-size:12px }
+  .election-type { font-size:10px }
+  .election-date { font-size:11px }
+}
+
+/* Touch-friendly improvements for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .state { min-height:110px }
+  .state:active { background:#2a2a2a;transform:scale(0.98) }
+  .coalition-party:active { background:#2a2a2a;transform:scale(0.98) }
+  .seats-btn:active { transform:scale(0.95) }
+  .close-btn:active { transform:scale(0.95) }
+  /* Remove hover effects on mobile */
+  .state:hover { transform:none }
+  .bar:hover { opacity:1 }
+  .seats-btn:hover { transform:none }
+  .close-btn:hover { background:#a33a3a }
+  .coalition-party:hover { background:#1e1e1e }
+}
 </style>
 </head>
 <body>
@@ -132,6 +225,20 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
 <div class="coalition-stats" id="coalitionStats"></div>
 <div class="coalition-result" id="coalitionResult"></div>
 </div>
+</div>
+</div>
+</div>
+<div class="state-modal-overlay" id="stateModal">
+<div class="state-modal-header">
+<h2 id="stateModalTitle">Bundesland</h2>
+<button class="close-btn" onclick="closeStateModal()">Schließen</button>
+</div>
+<div class="state-modal-body">
+<div class="date" id="stateModalDate"></div>
+<div id="stateModalBars"></div>
+<div class="history-section">
+<h3>Frühere Umfragen</h3>
+<div id="stateModalHistory"></div>
 </div>
 </div>
 </div>
@@ -165,6 +272,43 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
 </div>
 
 <script>
+// Mobile Detection & Optimization
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const isTablet = /(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(navigator.userAgent);
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+// Apply mobile-specific optimizations
+if(isMobile || isTouchDevice) {
+  document.body.classList.add('mobile-device');
+  
+  // Disable background image on mobile for better performance
+  if(window.innerWidth < 768) {
+    document.body.style.setProperty('--bg-opacity', '0');
+  }
+  
+  // Add touch event listeners for better responsiveness
+  document.addEventListener('DOMContentLoaded', function() {
+    // Prevent double-tap zoom on buttons
+    const buttons = document.querySelectorAll('button, .state, .coalition-party');
+    buttons.forEach(btn => {
+      btn.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        this.click();
+      });
+    });
+  });
+}
+
+// Viewport height fix for mobile browsers (address bar)
+function setViewportHeight() {
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+if(isMobile) {
+  setViewportHeight();
+  window.addEventListener('resize', setViewportHeight);
+}
+
 const seatCounts = {
   'Bundestag': 630,
   'Baden-Württemberg': 120,
@@ -495,6 +639,16 @@ function buildStates(){
 }
 
 function showState(state){
+  // Check if mobile (screen width <= 1024px)
+  const isMobile = window.innerWidth <= 1024;
+  
+  if(isMobile) {
+    // Mobile: Open modal instead
+    openStateModal(state);
+    return;
+  }
+  
+  // Desktop: Original behavior
   // Update active state
   if(currentState) {
     const prevStates = document.querySelectorAll('.state');
@@ -870,18 +1024,41 @@ function renderSeatDistribution(seats, totalSeats) {
   // Calculate dynamic dot size and spacing based on total seats
   let dotSize = 8;
   let spacing = 1;
-  if(totalSeats < 100) {
-    dotSize = 12;
-    spacing = 1.5;
-  } else if(totalSeats < 150) {
-    dotSize = 10;
-    spacing = 1.5;
-  } else if(totalSeats < 200) {
-    dotSize = 8;
-    spacing = 1.2;
+  
+  // Mobile adjustments
+  const screenWidth = window.innerWidth;
+  const isMobileView = screenWidth < 768;
+  
+  if(isMobileView) {
+    // Smaller dots on mobile
+    if(totalSeats < 100) {
+      dotSize = 8;
+      spacing = 1.2;
+    } else if(totalSeats < 150) {
+      dotSize = 6;
+      spacing = 1;
+    } else if(totalSeats < 200) {
+      dotSize = 5;
+      spacing = 0.8;
+    } else {
+      dotSize = 4;
+      spacing = 0.8;
+    }
   } else {
-    dotSize = 7;
-    spacing = 1;
+    // Desktop sizes
+    if(totalSeats < 100) {
+      dotSize = 12;
+      spacing = 1.5;
+    } else if(totalSeats < 150) {
+      dotSize = 10;
+      spacing = 1.5;
+    } else if(totalSeats < 200) {
+      dotSize = 8;
+      spacing = 1.2;
+    } else {
+      dotSize = 7;
+      spacing = 1;
+    }
   }
   
   // Political spectrum order: left to right
@@ -923,8 +1100,9 @@ function renderSeatDistribution(seats, totalSeats) {
   });
   
   // Render parliament semicircle
-  const containerWidth = 560;
-  const containerHeight = 300;
+  // Responsive container size
+  const containerWidth = isMobileView ? Math.min(screenWidth - 40, 400) : 560;
+  const containerHeight = isMobileView ? Math.min(containerWidth * 0.6, 250) : 300;
   gridDiv.style.width = containerWidth + 'px';
   gridDiv.style.height = containerHeight + 'px';
   gridDiv.style.position = 'relative';
@@ -1124,6 +1302,145 @@ function updateCoalitionResult() {
     resultDiv.innerHTML = '✗ Keine Mehrheit';
     resultDiv.className = 'coalition-result no-majority';
   }
+}
+
+// Mobile State Modal Functions
+function openStateModal(state) {
+  const modal = document.getElementById('stateModal');
+  const bars = document.getElementById('stateModalBars');
+  bars.innerHTML = "";
+  
+  document.getElementById('stateModalTitle').innerText = state;
+  document.getElementById('stateModalDate').innerText = "Stand: " + data[state].date;
+  
+  // Calculate trends from most recent history
+  const currentResults = data[state].results;
+  const previousResults = data[state].history[0].results;
+  
+  let entries = Object.entries(currentResults).sort((a,b) => {
+    // Always put Sonstige last
+    if(a[0] === 'Sonstige') return 1;
+    if(b[0] === 'Sonstige') return -1;
+    // Sort others by percentage descending
+    return b[1] - a[1];
+  });
+  
+  entries.forEach(([p,v], index) => {
+    const r = document.createElement("div");
+    r.className = "bar-row";
+    
+    const logo = document.createElement("img");
+    logo.src = logos[p];
+    logo.className = "party-logo";
+    logo.alt = p + " Logo";
+    
+    const b = document.createElement("div");
+    b.className = "bar";
+    // Better scaling for small percentages: base 70px + 10px per percent
+    const targetWidth = (v > 0 ? (70 + v*10) : 0) + "px";
+    b.style.background = colors[p];
+    b.style.color = (p === "FDP" ? "#000" : "#fff");
+    b.textContent = p;
+    
+    // Calculate exact percentage difference
+    const prevValue = previousResults[p] || 0;
+    const diff = v - prevValue;
+    let trendText = '';
+    let trendClass = 'same';
+    
+    if(diff > 0) { 
+      trendText = '+' + diff + '%'; 
+      trendClass = 'up'; 
+    } else if(diff < 0) { 
+      trendText = diff + '%'; 
+      trendClass = 'down'; 
+    } else {
+      trendText = '±0%';
+    }
+    
+    // Trigger animation with delay
+    setTimeout(() => {
+      b.classList.add('animate');
+      b.style.width = targetWidth;
+    }, index * 100);
+    
+    const pc = document.createElement("div");
+    pc.className = "percent";
+    pc.innerHTML = v + '% <span class="trend ' + trendClass + '">' + trendText + '</span>';
+    
+    r.appendChild(logo);
+    r.appendChild(b);
+    r.appendChild(pc);
+    bars.appendChild(r);
+  });
+  
+  // Add seats button after bars
+  const seatsBtn = document.createElement("button");
+  seatsBtn.className = "seats-btn";
+  seatsBtn.textContent = "Sitzverteilung/Koalitionen";
+  seatsBtn.onclick = () => {
+    closeStateModal();
+    openSeatsModal(state, currentResults);
+  };
+  bars.appendChild(seatsBtn);
+  
+  // Display historical data
+  const historyDiv = document.getElementById("stateModalHistory");
+  historyDiv.innerHTML = "";
+  
+  data[state].history.forEach(h => {
+    const row = document.createElement("div");
+    row.className = "history-row";
+    
+    const dateDiv = document.createElement("div");
+    dateDiv.className = "history-date";
+    dateDiv.textContent = h.date;
+    row.appendChild(dateDiv);
+    
+    const partiesDiv = document.createElement("div");
+    partiesDiv.className = "history-parties";
+    
+    // Sort parties by their historical percentages, but always put Sonstige last
+    const historicalEntries = Object.entries(h.results).sort((a,b) => {
+      // Always put Sonstige last
+      if(a[0] === 'Sonstige') return 1;
+      if(b[0] === 'Sonstige') return -1;
+      // Sort others by percentage descending
+      return b[1] - a[1];
+    });
+    
+    historicalEntries.forEach(([party, percent]) => {
+      if(percent > 0) {
+        const partyDiv = document.createElement("div");
+        partyDiv.className = "history-party";
+        
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "history-party-name";
+        nameDiv.textContent = party;
+        
+        const valueDiv = document.createElement("div");
+        valueDiv.className = "history-party-value";
+        valueDiv.style.color = colors[party];
+        valueDiv.textContent = percent + "%";
+        
+        partyDiv.appendChild(nameDiv);
+        partyDiv.appendChild(valueDiv);
+        partiesDiv.appendChild(partyDiv);
+      }
+    });
+    
+    row.appendChild(partiesDiv);
+    historyDiv.appendChild(row);
+  });
+  
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeStateModal() {
+  const modal = document.getElementById('stateModal');
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 </script>
