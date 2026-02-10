@@ -27,19 +27,29 @@ body::before {
   filter:blur(8px) brightness(0.3);
   z-index:-1;
 }
-h1 { text-align:center;padding:1rem }
+h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
+.newest-poll-date { text-align:center;color:#999;font-size:14px;margin-bottom:1.5rem }
+.new-badge { display:inline-block;background:#4f7a5a;color:#fff;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-top:10px }
+.bundestag-section { max-width:1400px;margin:0 auto 2rem;padding:0 2rem }
+.bundestag-container { background:#1e1e1e;border-radius:16px;padding:1.5rem;position:relative;overflow:hidden;border:2px solid transparent }
+.bundestag-container::before { content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Coat_of_arms_of_Germany.svg/960px-Coat_of_arms_of_Germany.svg.png');background-size:contain;background-repeat:no-repeat;background-position:center;opacity:0.08;pointer-events:none;z-index:0 }
+.bundestag-container h2 { margin:0 0 0.5rem 0;font-size:18px;position:relative;z-index:1 }
+.bundestag-container .date { color:#999;font-size:14px;margin-bottom:1rem;position:relative;z-index:1 }
+.bundestag-container .badge-container { position:relative;z-index:1;margin-top:1rem;text-align:center }
 .main { display:flex;max-width:1400px;margin:auto;gap:2rem }
 .states { display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;padding:2rem;width:50% }
-.state { background:#1e1e1e;border-radius:16px;padding:1rem;text-align:center;cursor:pointer;transition:all 0.3s ease }
+.state { background:#1e1e1e;border-radius:16px;padding:1rem;text-align:center;cursor:pointer;transition:all 0.3s ease;border:2px solid transparent;position:relative;display:flex;flex-direction:column;min-height:140px }
 .state:hover { background:#2a2a2a;transform:translateY(-2px) }
 .state.active { background:#2d2d2d;border:2px solid #4f7fa8 }
+.state-content { flex:1;display:flex;flex-direction:column;justify-content:center }
 .state img { width:70px;height:70px;object-fit:contain;margin:auto;display:block }
 .state-name { margin-top:0.5rem;font-size:14px;font-weight:600 }
+.state .badge-container { margin-top:auto;padding-top:0.5rem }
 .panel { width:50%;padding:2rem;background:#181818;position:relative;overflow:hidden }
 .panel::before { content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background-image:var(--bg-coat);background-size:contain;background-repeat:no-repeat;background-position:center;opacity:0.08;pointer-events:none;transition:all 0.5s ease }
 .panel h2 { margin-bottom:0.5rem }
 .panel .date { color:#999;font-size:14px;margin-bottom:1.5rem }
-.bar-row { display:flex;align-items:center;gap:10px;margin:.8rem 0 }
+.bar-row { display:flex;align-items:center;gap:10px;margin:.8rem 0;position:relative;z-index:1 }
 .party-logo { width:26px;height:26px;object-fit:contain }
 .bar { height:26px;border-radius:6px;display:flex;align-items:center;padding-left:8px;font-size:13px;font-weight:600;transition:all 0.3s ease;width:0;animation:none }
 .bar.animate { animation:expandBar 0.8s ease-out forwards }
@@ -65,6 +75,15 @@ h1 { text-align:center;padding:1rem }
 </head>
 <body>
 <h1>Deutschland Umfragen</h1>
+<div class="newest-poll-date" id="newest-poll-info"></div>
+<div class="bundestag-section">
+<div class="bundestag-container">
+<h2>Aktuelle Bundestag Umfrage</h2>
+<div class="date" id="bundestag-date"></div>
+<div id="bundestag-bars"></div>
+<div class="badge-container" id="bundestag-badge"></div>
+</div>
+</div>
 <div class="main">
 <div class="states" id="states"></div>
 <div class="panel">
@@ -115,6 +134,19 @@ const stateCoats = {
 "Schleswig-Holstein":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Schleswig-Holstein-Wappen-Drucksache-17-1664.svg/960px-Schleswig-Holstein-Wappen-Drucksache-17-1664.svg.png",
 "Thüringen":"https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Coat_of_arms_of_Thuringia.svg/960px-Coat_of_arms_of_Thuringia.svg.png"
 };
+
+// Bundestag data with CDU/CSU combined
+const bundestagData = {
+  'date': '09.02.2026',
+  'results': {'CDU/CSU': 25.9, 'AfD': 24.6, 'SPD': 15, 'Grüne': 11.9, 'BSW': 3.3, 'FDP': 3, 'Linke': 10.2, 'Sonstige': 6.1},
+  'history': [
+    {'date': '02.02.2026', 'results': {'CDU/CSU': 25.9, 'AfD': 24.6, 'SPD': 15, 'Grüne': 11.9, 'BSW': 3.3, 'FDP': 3, 'Linke': 10.2, 'Sonstige': 6.1}}
+  ]
+};
+
+// Add CDU/CSU to colors and logos
+colors['CDU/CSU'] = '#000000';
+logos['CDU/CSU'] = 'https://upload.wikimedia.org/wikipedia/de/thumb/7/7a/CDU-CSU-10.svg/330px-CDU-CSU-10.svg.png?20110122100932';
 
 const data = {
 'Baden-Württemberg': {
@@ -265,20 +297,101 @@ const data = {
 
 let currentState = null;
 
+function parseDate(dateStr) {
+  // Parse DD.MM.YYYY format
+  const parts = dateStr.split('.');
+  if(parts.length !== 3 || dateStr.includes('X')) return null;
+  return new Date(parts[2], parts[1] - 1, parts[0]);
+}
+
+function findNewestPoll() {
+  let newestDate = null;
+  let newestLocation = null;
+  let newestIsBundestag = false;
+  
+  // Check Bundestag
+  const bundestagDate = parseDate(bundestagData.date);
+  if(bundestagDate) {
+    newestDate = bundestagDate;
+    newestLocation = 'Bundestag';
+    newestIsBundestag = true;
+  }
+  
+  // Check all Landtag states
+  Object.entries(data).forEach(([state, stateData]) => {
+    const stateDate = parseDate(stateData.date);
+    if(stateDate && (!newestDate || stateDate > newestDate)) {
+      newestDate = stateDate;
+      newestLocation = state;
+      newestIsBundestag = false;
+    }
+  });
+  
+  return { 
+    date: newestDate, 
+    location: newestLocation, 
+    isBundestag: newestIsBundestag,
+    dateString: formatDate(newestDate)
+  };
+}
+
+function getLeadingParty(results) {
+  let maxPercent = 0;
+  let leadingParty = null;
+  Object.entries(results).forEach(([party, percent]) => {
+    if(percent > maxPercent) {
+      maxPercent = percent;
+      leadingParty = party;
+    }
+  });
+  return leadingParty;
+}
+
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
 function buildStates(){
+  const newest = findNewestPoll();
   const c=document.getElementById("states");
   Object.keys(data).forEach(s=>{
     const d=document.createElement("div");
     d.className="state";
     d.onclick=()=>showState(s);
+    
+    // Get leading party and set border color
+    const leadingParty = getLeadingParty(data[s].results);
+    d.style.borderColor = colors[leadingParty] || 'transparent';
+    
+    // Create content container
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "state-content";
+    
     const img=document.createElement("img");
     img.src=stateCoats[s];
     img.alt=s+" Wappen";
     const name=document.createElement("div");
     name.className="state-name";
     name.textContent=s;
-    d.appendChild(img);
-    d.appendChild(name);
+    
+    contentDiv.appendChild(img);
+    contentDiv.appendChild(name);
+    d.appendChild(contentDiv);
+    
+    // Add "Neue Umfrage" badge at bottom if this has the newest date
+    if(data[s].date === newest.dateString) {
+      const badgeContainer = document.createElement("div");
+      badgeContainer.className = "badge-container";
+      const badge = document.createElement("span");
+      badge.className = "new-badge";
+      badge.textContent = "Neue Umfrage";
+      badgeContainer.appendChild(badge);
+      d.appendChild(badgeContainer);
+    }
+    
     c.appendChild(d);
   });
 }
@@ -402,7 +515,94 @@ function showState(state){
   });
 }
 
+function showBundestag() {
+  const newest = findNewestPoll();
+  const bars = document.getElementById("bundestag-bars");
+  bars.innerHTML = "";
+  
+  // Set border color based on leading party
+  const leadingParty = getLeadingParty(bundestagData.results);
+  const bundestagContainer = document.querySelector('.bundestag-container');
+  bundestagContainer.style.borderColor = colors[leadingParty] || 'transparent';
+  
+  // Update date without badge
+  document.getElementById("bundestag-date").innerHTML = "Stand: " + bundestagData.date;
+  
+  // Update badge container if newest
+  const badgeContainer = document.getElementById("bundestag-badge");
+  badgeContainer.innerHTML = "";
+  if(bundestagData.date === newest.dateString) {
+    const badge = document.createElement("span");
+    badge.className = "new-badge";
+    badge.textContent = "Neue Umfrage";
+    badgeContainer.appendChild(badge);
+  }
+  
+  // Calculate trends from most recent history
+  const currentResults = bundestagData.results;
+  const previousResults = bundestagData.history[0].results;
+  
+  let entries = Object.entries(currentResults).sort((a,b) => b[1] - a[1]);
+  entries.forEach(([p, v], index) => {
+    const r = document.createElement("div");
+    r.className = "bar-row";
+    
+    const logo = document.createElement("img");
+    logo.src = logos[p];
+    logo.className = "party-logo";
+    logo.alt = p + " Logo";
+    
+    const b = document.createElement("div");
+    b.className = "bar";
+    // Better scaling for small percentages: base 70px + 10px per percent
+    const targetWidth = (v > 0 ? (70 + v * 10) : 0) + "px";
+    b.style.background = colors[p];
+    b.style.color = (p === "FDP" ? "#000" : "#fff");
+    b.textContent = p;
+    
+    // Calculate exact percentage difference
+    const prevValue = previousResults[p] || 0;
+    const diff = v - prevValue;
+    let trendText = '';
+    let trendClass = 'same';
+    
+    if(diff > 0) { 
+      trendText = '+' + diff + '%'; 
+      trendClass = 'up'; 
+    } else if(diff < 0) { 
+      trendText = diff + '%'; 
+      trendClass = 'down'; 
+    } else {
+      trendText = '±0%';
+    }
+    
+    // Trigger animation with delay
+    setTimeout(() => {
+      b.classList.add('animate');
+      b.style.width = targetWidth;
+    }, index * 100);
+    
+    const pc = document.createElement("div");
+    pc.className = "percent";
+    pc.innerHTML = v + '% <span class="trend ' + trendClass + '">' + trendText + '</span>';
+    
+    r.appendChild(logo);
+    r.appendChild(b);
+    r.appendChild(pc);
+    bars.appendChild(r);
+  });
+}
+
 buildStates();
+showBundestag();
+
+// Display newest poll info at the top
+const newest = findNewestPoll();
+if(newest.date) {
+  const newestInfo = document.getElementById('newest-poll-info');
+  newestInfo.textContent = `Neuste Umfrage: ${formatDate(newest.date)} (${newest.location})`;
+}
+
 // Show first state by default
 showState(Object.keys(data)[0]);
 </script>
