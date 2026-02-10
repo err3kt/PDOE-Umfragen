@@ -71,17 +71,84 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
 .trend.up { color:#4f7a5a }
 .trend.down { color:#a33a3a }
 .trend.same { color:#666 }
+#elections-2026 { max-height:360px;overflow-y:auto;padding-right:8px }
+#elections-2026::-webkit-scrollbar { width:8px }
+#elections-2026::-webkit-scrollbar-track { background:#121212;border-radius:4px }
+#elections-2026::-webkit-scrollbar-thumb { background:#3a3a3a;border-radius:4px }
+#elections-2026::-webkit-scrollbar-thumb:hover { background:#4a4a4a }
+.election-item { display:flex;align-items:center;gap:12px;margin:1rem 0;padding:0.8rem;background:#2a2a2a;border-radius:8px;position:relative;z-index:1 }
+.election-coat { width:40px;height:40px;object-fit:contain }
+.election-info { flex:1 }
+.election-state { font-weight:600;font-size:14px;margin-bottom:2px }
+.election-type { font-size:12px;color:#999 }
+.election-date { font-size:13px;color:#aaa;white-space:nowrap }
+.seats-btn { background:#4f7fa8;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;margin-top:1rem;transition:all 0.3s ease;position:relative;z-index:1 }
+.seats-btn:hover { background:#5a8bb8;transform:translateY(-1px) }
+.modal-overlay { display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center }
+.modal-overlay.active { display:flex }
+.modal-content { background:#1e1e1e;border-radius:16px;width:90%;max-width:1200px;max-height:90vh;overflow:hidden;position:relative;border:2px solid #4f7fa8 }
+.modal-header { display:flex;justify-content:space-between;align-items:center;padding:1.5rem;border-bottom:1px solid #333 }
+.modal-header h2 { margin:0;font-size:20px }
+.close-btn { background:#a33a3a;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s ease }
+.close-btn:hover { background:#c44a4a }
+.modal-body { display:grid;grid-template-columns:1fr 1fr;gap:2rem;padding:2rem;max-height:calc(90vh - 80px);overflow-y:auto }
+.modal-section { background:#2a2a2a;border-radius:12px;padding:1.5rem }
+.modal-section h3 { margin:0 0 1rem 0;font-size:16px;color:#4f7fa8 }
+.seats-grid { display:flex;flex-wrap:wrap;gap:4px;margin-top:1rem;justify-content:center;align-items:flex-end;position:relative;min-height:300px }
+.seat-dot { border-radius:50%;display:inline-block;position:absolute;transition:opacity 0.4s ease }
+.parliament-container { width:100%;height:300px;position:relative }
+.party-seat-info { display:flex;align-items:center;gap:10px;margin:0.8rem 0;padding:0.5rem;background:#1e1e1e;border-radius:6px }
+.party-seat-logo { width:24px;height:24px;object-fit:contain }
+.party-seat-name { flex:1;font-size:14px;font-weight:600 }
+.party-seat-count { font-size:14px;font-weight:600;color:#4f7fa8 }
+.coalition-party { display:flex;align-items:center;gap:10px;padding:0.8rem;background:#1e1e1e;border-radius:8px;margin:0.5rem 0;cursor:pointer;transition:all 0.3s ease;border:2px solid transparent }
+.coalition-party:hover { background:#2a2a2a }
+.coalition-party.selected { border-color:#4f7a5a;background:#2d2d2d }
+.coalition-result { margin-top:1.5rem;padding:1rem;border-radius:8px;text-align:center;font-size:16px;font-weight:600 }
+.coalition-result.majority { background:#4f7a5a;color:#fff }
+.coalition-result.no-majority { background:#a33a3a;color:#fff }
+.coalition-stats { display:flex;justify-content:space-around;margin-top:1rem;padding:1rem;background:#1e1e1e;border-radius:8px }
+.coalition-stat { text-align:center }
+.coalition-stat-value { font-size:24px;font-weight:600;color:#4f7fa8 }
+.coalition-stat-label { font-size:12px;color:#999;margin-top:0.3rem }
 </style>
 </head>
 <body>
+<div class="modal-overlay" id="seatsModal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 id="modalTitle">Sitzverteilung & Koalitionen</h2>
+<button class="close-btn" onclick="closeSeatsModal()">Schließen</button>
+</div>
+<div class="modal-body">
+<div class="modal-section">
+<h3>Sitzverteilung</h3>
+<div id="seatsList"></div>
+<div id="seatsGrid" class="seats-grid"></div>
+</div>
+<div class="modal-section">
+<h3>Koalitionsrechner</h3>
+<div id="coalitionParties"></div>
+<div class="coalition-stats" id="coalitionStats"></div>
+<div class="coalition-result" id="coalitionResult"></div>
+</div>
+</div>
+</div>
+</div>
 <h1>Deutschland Umfragen</h1>
 <div class="newest-poll-date" id="newest-poll-info"></div>
 <div class="bundestag-section">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
 <div class="bundestag-container">
-<h2>Aktuelle Bundestag Umfrage</h2>
+<h2>Aktuelle Bundestag Umfrage <span id="bundestag-new-badge"></span></h2>
 <div class="date" id="bundestag-date"></div>
 <div id="bundestag-bars"></div>
 <div class="badge-container" id="bundestag-badge"></div>
+</div>
+<div class="bundestag-container">
+<h2>Wahlen 2026</h2>
+<div id="elections-2026"></div>
+</div>
 </div>
 </div>
 <div class="main">
@@ -98,9 +165,32 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
 </div>
 
 <script>
+const seatCounts = {
+  'Bundestag': 630,
+  'Baden-Württemberg': 120,
+  'Bayern': 180,
+  'Berlin': 130,
+  'Brandenburg': 88,
+  'Bremen': 87,
+  'Hamburg': 121,
+  'Hessen': 110,
+  'Niedersachsen': 135,
+  'Mecklenburg-Vorpommern': 71,
+  'Nordrhein-Westfalen': 181,
+  'Rheinland-Pfalz': 101,
+  'Saarland': 51,
+  'Sachsen': 120,
+  'Sachsen-Anhalt': 83,
+  'Schleswig-Holstein': 69,
+  'Thüringen': 88
+};
+
+let currentSeatsData = null;
+let selectedCoalition = [];
+
 const colors = {
-"CSU":"#008AC5","CDU":"#000000","AfD":"#009EE0","BSW":"#8B1874",
-"SPD":"#E3000F","Grüne":"#64A12D","FDP":"#FFED00","Linke":"#BE3075","FW":"#EE7D00","Sonstige":"#666"
+"CSU":"#008AC5","CDU":"#000000","AfD":"#009EE0","BSW":"#5A1F47",
+"SPD":"#E3000F","Grüne":"#64A12D","FDP":"#FFED00","Linke":"#E74C8C","FW":"#EE7D00","Sonstige":"#666"
 };
 
 const logos = {
@@ -357,7 +447,15 @@ function formatDate(date) {
 function buildStates(){
   const newest = findNewestPoll();
   const c=document.getElementById("states");
-  Object.keys(data).forEach(s=>{
+  
+  // Sort states by date (newest first)
+  const sortedStates = Object.keys(data).sort((a, b) => {
+    const dateA = parseDate(data[a].date);
+    const dateB = parseDate(data[b].date);
+    return dateB - dateA; // Descending order (newest first)
+  });
+  
+  sortedStates.forEach(s=>{
     const d=document.createElement("div");
     d.className="state";
     d.onclick=()=>showState(s);
@@ -404,8 +502,10 @@ function showState(state){
   }
   currentState = state;
   const states = document.querySelectorAll('.state');
-  states.forEach((s, i) => {
-    if(Object.keys(data)[i] === state) {
+  states.forEach((s) => {
+    // Check if this state div's text matches the current state
+    const stateName = s.querySelector('.state-name').textContent;
+    if(stateName === state) {
       s.classList.add('active');
     }
   });
@@ -479,6 +579,13 @@ function showState(state){
     bars.appendChild(r);
   });
   
+  // Add seats button after bars
+  const seatsBtn = document.createElement("button");
+  seatsBtn.className = "seats-btn";
+  seatsBtn.textContent = "Sitzverteilung/Koalitionen";
+  seatsBtn.onclick = () => openSeatsModal(state, currentResults);
+  bars.appendChild(seatsBtn);
+  
   // Display historical data
   const historyDiv = document.getElementById("history");
   historyDiv.innerHTML = "";
@@ -543,12 +650,23 @@ function showBundestag() {
   // Update badge container if newest
   const badgeContainer = document.getElementById("bundestag-badge");
   badgeContainer.innerHTML = "";
+  
+  // Show "Neue Umfrage" badge next to title if it's the newest
+  const newBadgeContainer = document.getElementById("bundestag-new-badge");
+  newBadgeContainer.innerHTML = "";
   if(bundestagData.date === newest.dateString) {
     const badge = document.createElement("span");
     badge.className = "new-badge";
     badge.textContent = "Neue Umfrage";
-    badgeContainer.appendChild(badge);
+    newBadgeContainer.appendChild(badge);
   }
+  
+  // Add seats button
+  const seatsBtn = document.createElement("button");
+  seatsBtn.className = "seats-btn";
+  seatsBtn.textContent = "Sitzverteilung/Koalitionen";
+  seatsBtn.onclick = () => openSeatsModal('Bundestag', bundestagData.results);
+  badgeContainer.appendChild(seatsBtn);
   
   // Calculate trends from most recent history
   const currentResults = bundestagData.results;
@@ -611,8 +729,60 @@ function showBundestag() {
   });
 }
 
+// Elections 2026 data
+const elections2026 = [
+  { state: 'Baden-Württemberg', type: 'Landtag', date: '08.03.2026' },
+  { state: 'Bayern', type: 'Kommunalwahl', date: '08.03.2026' },
+  { state: 'Hessen', type: 'Kommunalwahl', date: '15.03.2026' },
+  { state: 'Rheinland-Pfalz', type: 'Landtag', date: '22.03.2026' },
+  { state: 'Sachsen-Anhalt', type: 'Landtag', date: '06.09.2026' },
+  { state: 'Niedersachsen', type: 'Kommunalwahl', date: '13.09.2026' },
+  { state: 'Berlin', type: 'Abgeordnetenhaus', date: '20.09.2026' },
+  { state: 'Mecklenburg-Vorpommern', type: 'Landtag', date: '20.09.2026' }
+];
+
+function displayElections() {
+  const container = document.getElementById('elections-2026');
+  container.innerHTML = '';
+  
+  elections2026.forEach(election => {
+    const item = document.createElement('div');
+    item.className = 'election-item';
+    
+    const coat = document.createElement('img');
+    coat.src = stateCoats[election.state];
+    coat.className = 'election-coat';
+    coat.alt = election.state + ' Wappen';
+    
+    const info = document.createElement('div');
+    info.className = 'election-info';
+    
+    const stateName = document.createElement('div');
+    stateName.className = 'election-state';
+    stateName.textContent = election.state;
+    
+    const electionType = document.createElement('div');
+    electionType.className = 'election-type';
+    electionType.textContent = election.type;
+    
+    const electionDate = document.createElement('div');
+    electionDate.className = 'election-date';
+    electionDate.textContent = election.date;
+    
+    info.appendChild(stateName);
+    info.appendChild(electionType);
+    
+    item.appendChild(coat);
+    item.appendChild(info);
+    item.appendChild(electionDate);
+    
+    container.appendChild(item);
+  });
+}
+
 buildStates();
 showBundestag();
+displayElections();
 
 // Display newest poll info at the top
 const newest = findNewestPoll();
@@ -621,8 +791,341 @@ if(newest.date) {
   newestInfo.textContent = `Neuste Umfrage: ${formatDate(newest.date)} (${newest.location})`;
 }
 
-// Show first state by default
-showState(Object.keys(data)[0]);
+// Show first state by default (which is now the newest after sorting)
+const sortedStateKeys = Object.keys(data).sort((a, b) => {
+  const dateA = parseDate(data[a].date);
+  const dateB = parseDate(data[b].date);
+  return dateB - dateA;
+});
+showState(sortedStateKeys[0]);
+
+// Seat distribution and coalition calculator functions
+function calculateSeats(results, totalSeats) {
+  // Filter parties: exclude Sonstige and parties below 5%
+  const eligibleParties = {};
+  
+  Object.entries(results).forEach(([party, percent]) => {
+    if(party !== 'Sonstige' && percent >= 5) {
+      eligibleParties[party] = percent;
+    }
+  });
+  
+  // Sainte-Laguë/Schepers method (used in Germany)
+  const seats = {};
+  Object.keys(eligibleParties).forEach(party => seats[party] = 0);
+  
+  // Allocate seats one by one
+  for(let i = 0; i < totalSeats; i++) {
+    let maxQuotient = 0;
+    let maxParty = null;
+    
+    Object.entries(eligibleParties).forEach(([party, percent]) => {
+      // Quotient = votes / (2 * seats + 1)
+      const quotient = percent / (2 * seats[party] + 1);
+      if(quotient > maxQuotient) {
+        maxQuotient = quotient;
+        maxParty = party;
+      }
+    });
+    
+    if(maxParty) {
+      seats[maxParty]++;
+    }
+  }
+  
+  return seats;
+}
+
+function openSeatsModal(location, results) {
+  const totalSeats = seatCounts[location] || 630;
+  const seats = calculateSeats(results, totalSeats);
+  
+  currentSeatsData = { location, seats, totalSeats };
+  selectedCoalition = [];
+  
+  document.getElementById('modalTitle').textContent = location + ' - Sitzverteilung & Koalitionen';
+  
+  // Render seat distribution
+  renderSeatDistribution(seats, totalSeats);
+  
+  // Render coalition calculator
+  renderCoalitionCalculator(seats, totalSeats);
+  
+  document.getElementById('seatsModal').classList.add('active');
+}
+
+function closeSeatsModal() {
+  document.getElementById('seatsModal').classList.remove('active');
+  currentSeatsData = null;
+  selectedCoalition = [];
+}
+
+function renderSeatDistribution(seats, totalSeats) {
+  const listDiv = document.getElementById('seatsList');
+  const gridDiv = document.getElementById('seatsGrid');
+  
+  listDiv.innerHTML = '';
+  gridDiv.innerHTML = '';
+  
+  // Calculate dynamic dot size and spacing based on total seats
+  let dotSize = 8;
+  let spacing = 1;
+  if(totalSeats < 100) {
+    dotSize = 12;
+    spacing = 1.5;
+  } else if(totalSeats < 150) {
+    dotSize = 10;
+    spacing = 1.5;
+  } else if(totalSeats < 200) {
+    dotSize = 8;
+    spacing = 1.2;
+  } else {
+    dotSize = 7;
+    spacing = 1;
+  }
+  
+  // Political spectrum order: left to right
+  // Linke → BSW → Grüne → SPD → FDP → CDU/CSU → AfD
+  const politicalOrder = ['Linke', 'BSW', 'Grüne', 'SPD', 'FDP', 'CDU', 'CDU/CSU', 'CSU', 'FW', 'AfD'];
+  
+  // Sort parties by political spectrum
+  const sortedSeats = Object.entries(seats).sort((a, b) => {
+    const indexA = politicalOrder.indexOf(a[0]);
+    const indexB = politicalOrder.indexOf(b[0]);
+    const posA = indexA === -1 ? 999 : indexA;
+    const posB = indexB === -1 ? 999 : indexB;
+    return posA - posB;
+  });
+  
+  // Render party list (sorted by seat count)
+  const sortedByCount = Object.entries(seats).sort((a, b) => b[1] - a[1]);
+  sortedByCount.forEach(([party, count]) => {
+    const info = document.createElement('div');
+    info.className = 'party-seat-info';
+    
+    const logo = document.createElement('img');
+    logo.src = logos[party];
+    logo.className = 'party-seat-logo';
+    logo.alt = party;
+    
+    const name = document.createElement('div');
+    name.className = 'party-seat-name';
+    name.textContent = party;
+    
+    const countDiv = document.createElement('div');
+    countDiv.className = 'party-seat-count';
+    countDiv.textContent = count + ' Sitze';
+    
+    info.appendChild(logo);
+    info.appendChild(name);
+    info.appendChild(countDiv);
+    listDiv.appendChild(info);
+  });
+  
+  // Render parliament semicircle
+  const containerWidth = 560;
+  const containerHeight = 300;
+  gridDiv.style.width = containerWidth + 'px';
+  gridDiv.style.height = containerHeight + 'px';
+  gridDiv.style.position = 'relative';
+  gridDiv.style.margin = '0 auto';
+  
+  // Parliament layout parameters - optimized for much tighter spacing
+  const numRows = totalSeats < 80 ? 4 : (totalSeats < 120 ? 5 : (totalSeats < 200 ? 6 : 7));
+  const baseRadius = totalSeats < 100 ? 40 : (totalSeats < 200 ? 50 : 60);
+  const maxRadius = containerWidth / 2 - 20;
+  const radiusIncrement = (maxRadius - baseRadius) / Math.max(1, numRows - 1);
+  
+  // Calculate seats per row based on circumference and dot size
+  const seatsPerRow = [];
+  let totalCalculated = 0;
+  for(let row = 0; row < numRows; row++) {
+    const radius = baseRadius + row * radiusIncrement;
+    const circumference = Math.PI * radius;
+    const seatsInRow = Math.max(3, Math.floor(circumference / (dotSize + spacing)));
+    seatsPerRow.push(seatsInRow);
+    totalCalculated += seatsInRow;
+  }
+  
+  // Adjust to match exact total seats
+  const ratio = totalSeats / totalCalculated;
+  for(let i = 0; i < seatsPerRow.length; i++) {
+    seatsPerRow[i] = Math.round(seatsPerRow[i] * ratio);
+  }
+  
+  // Fine-tune to exact total
+  let currentTotal = seatsPerRow.reduce((a, b) => a + b, 0);
+  while(currentTotal < totalSeats) {
+    // Add to row with most seats
+    const maxRowIndex = seatsPerRow.indexOf(Math.max(...seatsPerRow));
+    seatsPerRow[maxRowIndex]++;
+    currentTotal++;
+  }
+  while(currentTotal > totalSeats) {
+    // Remove from row with most seats
+    const maxRowIndex = seatsPerRow.indexOf(Math.max(...seatsPerRow));
+    if(seatsPerRow[maxRowIndex] > 1) {
+      seatsPerRow[maxRowIndex]--;
+      currentTotal--;
+    } else break;
+  }
+  
+  // Create all seat positions first, then assign parties
+  const allPositions = [];
+  const centerX = containerWidth / 2;
+  const centerY = containerHeight - 20;
+  
+  for(let row = 0; row < numRows; row++) {
+    const radius = baseRadius + row * radiusIncrement;
+    const seatsInThisRow = seatsPerRow[row];
+    
+    for(let posInRow = 0; posInRow < seatsInThisRow; posInRow++) {
+      const angle = Math.PI * (posInRow / (seatsInThisRow - 1 || 1));
+      const x = centerX - radius * Math.cos(angle);
+      const y = centerY - radius * Math.sin(angle);
+      
+      // Calculate horizontal position for sorting (left to right)
+      allPositions.push({ x, y, angle, row });
+    }
+  }
+  
+  // Sort all positions by angle (left to right in parliament)
+  allPositions.sort((a, b) => a.angle - b.angle);
+  
+  // Assign parties to positions in political order
+  let posIndex = 0;
+  sortedSeats.forEach(([party, count]) => {
+    for(let i = 0; i < count && posIndex < allPositions.length; i++) {
+      const pos = allPositions[posIndex];
+      
+      const dot = document.createElement('div');
+      dot.className = 'seat-dot';
+      dot.style.width = dotSize + 'px';
+      dot.style.height = dotSize + 'px';
+      dot.style.background = colors[party];
+      dot.style.left = (pos.x - dotSize / 2) + 'px';
+      dot.style.top = (pos.y - dotSize / 2) + 'px';
+      dot.title = party;
+      dot.dataset.party = party;
+      
+      // Set opacity based on coalition selection
+      if(selectedCoalition.length > 0) {
+        dot.style.opacity = selectedCoalition.includes(party) ? '1' : '0.15';
+      } else {
+        dot.style.opacity = '1';
+      }
+      
+      gridDiv.appendChild(dot);
+      posIndex++;
+    }
+  });
+}
+
+function renderCoalitionCalculator(seats, totalSeats) {
+  const partiesDiv = document.getElementById('coalitionParties');
+  partiesDiv.innerHTML = '';
+  
+  const sortedSeats = Object.entries(seats).sort((a, b) => b[1] - a[1]);
+  
+  sortedSeats.forEach(([party, count]) => {
+    const partyDiv = document.createElement('div');
+    partyDiv.className = 'coalition-party';
+    partyDiv.onclick = () => toggleCoalitionParty(party);
+    
+    const logo = document.createElement('img');
+    logo.src = logos[party];
+    logo.className = 'party-seat-logo';
+    logo.alt = party;
+    
+    const name = document.createElement('div');
+    name.className = 'party-seat-name';
+    name.textContent = party;
+    
+    const countDiv = document.createElement('div');
+    countDiv.className = 'party-seat-count';
+    countDiv.textContent = count + ' Sitze';
+    
+    partyDiv.appendChild(logo);
+    partyDiv.appendChild(name);
+    partyDiv.appendChild(countDiv);
+    partiesDiv.appendChild(partyDiv);
+  });
+  
+  updateCoalitionResult();
+}
+
+function toggleCoalitionParty(party) {
+  const index = selectedCoalition.indexOf(party);
+  if(index > -1) {
+    selectedCoalition.splice(index, 1);
+  } else {
+    selectedCoalition.push(party);
+  }
+  
+  // Update UI
+  const partyDivs = document.querySelectorAll('.coalition-party');
+  partyDivs.forEach(div => {
+    const partyName = div.querySelector('.party-seat-name').textContent;
+    if(selectedCoalition.includes(partyName)) {
+      div.classList.add('selected');
+    } else {
+      div.classList.remove('selected');
+    }
+  });
+  
+  updateCoalitionResult();
+}
+
+function updateCoalitionResult() {
+  if(!currentSeatsData) return;
+  
+  const { seats, totalSeats } = currentSeatsData;
+  const coalitionSeats = selectedCoalition.reduce((sum, party) => sum + (seats[party] || 0), 0);
+  const requiredSeats = Math.ceil(totalSeats / 2);
+  const hasMajority = coalitionSeats >= requiredSeats;
+  
+  // Update opacity of existing seat dots without re-rendering
+  const allDots = document.querySelectorAll('.seat-dot');
+  allDots.forEach(dot => {
+    const party = dot.dataset.party;
+    if(selectedCoalition.length > 0) {
+      dot.style.opacity = selectedCoalition.includes(party) ? '1' : '0.15';
+    } else {
+      dot.style.opacity = '1';
+    }
+  });
+  
+  // Update stats
+  const statsDiv = document.getElementById('coalitionStats');
+  statsDiv.innerHTML = `
+    <div class="coalition-stat">
+      <div class="coalition-stat-value">${coalitionSeats}</div>
+      <div class="coalition-stat-label">Sitze</div>
+    </div>
+    <div class="coalition-stat">
+      <div class="coalition-stat-value">${requiredSeats}</div>
+      <div class="coalition-stat-label">Benötigt</div>
+    </div>
+    <div class="coalition-stat">
+      <div class="coalition-stat-value">${((coalitionSeats / totalSeats) * 100).toFixed(1)}%</div>
+      <div class="coalition-stat-label">Anteil</div>
+    </div>
+  `;
+  
+  // Update result
+  const resultDiv = document.getElementById('coalitionResult');
+  if(selectedCoalition.length === 0) {
+    resultDiv.innerHTML = 'Wählen Sie Parteien für eine Koalition aus';
+    resultDiv.className = 'coalition-result';
+  } else if(hasMajority) {
+    resultDiv.innerHTML = '✓ Mehrheit erreicht';
+    resultDiv.className = 'coalition-result majority';
+  } else {
+    resultDiv.innerHTML = '✗ Keine Mehrheit';
+    resultDiv.className = 'coalition-result no-majority';
+  }
+}
+
 </script>
 </body>
 </html>
