@@ -725,8 +725,11 @@ function showState(state){
     
     const b=document.createElement("div");
     b.className="bar";
-    // Proportional scaling: each 1% = ~15px width for better visual comparison
-    const targetWidth = v > 0 ? Math.max(40, v * 15) + "px" : "0px";
+    // Mobile-optimized scaling: smaller multiplier for mobile screens
+    const isMobile = window.innerWidth <= 768;
+    const scaleFactor = isMobile ? 8 : 15; // 8px per % on mobile, 15px on desktop
+    const minWidth = isMobile ? 30 : 40;
+    const targetWidth = v > 0 ? Math.max(minWidth, v * scaleFactor) + "px" : "0px";
     b.style.background=colors[p];
     b.style.color = (p==="FDP" ? "#000" : "#fff");
     b.textContent = p;
@@ -874,8 +877,11 @@ function showBundestag() {
     
     const b = document.createElement("div");
     b.className = "bar";
-    // Proportional scaling: each 1% = ~15px width for better visual comparison
-    const targetWidth = v > 0 ? Math.max(40, v * 15) + "px" : "0px";
+    // Mobile-optimized scaling: smaller multiplier for mobile screens
+    const isMobile = window.innerWidth <= 768;
+    const scaleFactor = isMobile ? 8 : 15; // 8px per % on mobile, 15px on desktop
+    const minWidth = isMobile ? 30 : 40;
+    const targetWidth = v > 0 ? Math.max(minWidth, v * scaleFactor) + "px" : "0px";
     b.style.background = colors[p];
     b.style.color = (p === "FDP" ? "#000" : "#fff");
     b.textContent = p;
@@ -1370,8 +1376,11 @@ function openStateModal(state) {
     
     const b = document.createElement("div");
     b.className = "bar";
-    // Proportional scaling: each 1% = ~15px width for better visual comparison
-    const targetWidth = v > 0 ? Math.max(40, v * 15) + "px" : "0px";
+    // Mobile-optimized scaling: smaller multiplier for mobile screens
+    const isMobile = window.innerWidth <= 768;
+    const scaleFactor = isMobile ? 8 : 15; // 8px per % on mobile, 15px on desktop
+    const minWidth = isMobile ? 30 : 40;
+    const targetWidth = v > 0 ? Math.max(minWidth, v * scaleFactor) + "px" : "0px";
     b.style.background = colors[p];
     b.style.color = (p === "FDP" ? "#000" : "#fff");
     b.textContent = p;
