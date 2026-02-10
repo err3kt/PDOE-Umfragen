@@ -115,8 +115,9 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
 /* State Data Modal for Mobile */
 .state-modal-overlay { display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#181818;z-index:2000;overflow-y:auto }
 .state-modal-overlay.active { display:block }
-.state-modal-header { display:flex;justify-content:space-between;align-items:center;padding:1rem;border-bottom:1px solid #333;position:sticky;top:0;background:#181818;z-index:10 }
-.state-modal-header h2 { margin:0;font-size:18px }
+.state-modal-header { display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1rem;border-bottom:1px solid #333;position:sticky;top:0;background:#181818;z-index:10 }
+.state-modal-header h2 { margin:0;font-size:18px;line-height:1.4 }
+.state-modal-header .close-btn { align-self:center }
 .state-modal-body { padding:1.5rem }
 .state-modal-body .date { color:#999;font-size:14px;margin-bottom:1.5rem }
 
@@ -602,7 +603,36 @@ function buildStates(){
   sortedStates.forEach(s=>{
     const d=document.createElement("div");
     d.className="state";
-    d.onclick=()=>showState(s);
+    
+    // Touch/Click detection to prevent opening while scrolling
+    let touchStartY = 0;
+    let touchEndY = 0;
+    let touchStartTime = 0;
+    
+    d.addEventListener('touchstart', (e) => {
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    }, { passive: true });
+    
+    d.addEventListener('touchend', (e) => {
+      touchEndY = e.changedTouches[0].clientY;
+      const touchDuration = Date.now() - touchStartTime;
+      const touchDistance = Math.abs(touchEndY - touchStartY);
+      
+      // Only trigger if it was a tap (not a scroll)
+      // Max 10px movement and max 300ms duration
+      if (touchDistance < 10 && touchDuration < 300) {
+        showState(s);
+      }
+    });
+    
+    // Desktop click
+    d.addEventListener('click', (e) => {
+      // Only for non-touch devices
+      if (!('ontouchstart' in window)) {
+        showState(s);
+      }
+    });
     
     // Get leading party and set border color
     const leadingParty = getLeadingParty(data[s].results);
