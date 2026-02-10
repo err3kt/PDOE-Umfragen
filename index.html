@@ -423,7 +423,13 @@ function showState(state){
   const currentResults = data[state].results;
   const previousResults = data[state].history[0].results;
   
-  let entries=Object.entries(currentResults).sort((a,b)=>b[1]-a[1]);
+  let entries=Object.entries(currentResults).sort((a,b)=>{
+    // Always put Sonstige last
+    if(a[0] === 'Sonstige') return 1;
+    if(b[0] === 'Sonstige') return -1;
+    // Sort others by percentage descending
+    return b[1]-a[1];
+  });
   entries.forEach(([p,v], index)=>{
     const r=document.createElement("div");
     r.className="bar-row";
@@ -489,8 +495,14 @@ function showState(state){
     const partiesDiv = document.createElement("div");
     partiesDiv.className = "history-parties";
     
-    // Sort parties by their historical percentages
-    const historicalEntries = Object.entries(h.results).sort((a,b)=>b[1]-a[1]);
+    // Sort parties by their historical percentages, but always put Sonstige last
+    const historicalEntries = Object.entries(h.results).sort((a,b)=>{
+      // Always put Sonstige last
+      if(a[0] === 'Sonstige') return 1;
+      if(b[0] === 'Sonstige') return -1;
+      // Sort others by percentage descending
+      return b[1]-a[1];
+    });
     historicalEntries.forEach(([p, v]) => {
       if(v > 0) {
         const partyDiv = document.createElement("div");
@@ -542,7 +554,13 @@ function showBundestag() {
   const currentResults = bundestagData.results;
   const previousResults = bundestagData.history[0].results;
   
-  let entries = Object.entries(currentResults).sort((a,b) => b[1] - a[1]);
+  let entries = Object.entries(currentResults).sort((a,b) => {
+    // Always put Sonstige last
+    if(a[0] === 'Sonstige') return 1;
+    if(b[0] === 'Sonstige') return -1;
+    // Sort others by percentage descending
+    return b[1] - a[1];
+  });
   entries.forEach(([p, v], index) => {
     const r = document.createElement("div");
     r.className = "bar-row";
