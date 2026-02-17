@@ -195,6 +195,182 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
   .election-date { font-size:11px }
 }
 
+
+/* Hide desktop panel on mobile - state data opens in modal frame */
+@media screen and (max-width: 1024px) {
+  .panel { display: none !important; }
+}
+
+/* Weitere Umfragen Button - fixed bottom on mobile */
+.weitere-btn-container {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 2rem 1.5rem;
+}
+@media screen and (max-width: 1024px) {
+  .weitere-btn-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: linear-gradient(to top, #121212 70%, transparent);
+    z-index: 500;
+    box-sizing: border-box;
+  }
+  /* Add padding so page content doesnt hide behind fixed button */
+  body { padding-bottom: 70px; }
+}
+
+.weitere-btn {
+  background: linear-gradient(135deg, #2d5a8e, #4f7fa8);
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(79,127,168,0.35);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: Inter, sans-serif;
+  position: relative;
+}
+.weitere-btn:hover { background: linear-gradient(135deg, #3a6fa0, #5a8fc0); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,127,168,0.5) }
+.weitere-btn:active { transform: scale(0.97) }
+@media screen and (max-width: 1024px) {
+  .weitere-btn { width: 100%; justify-content: center; padding: 13px 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+}
+.weitere-btn .neue-badge {
+  background: #4f7a5a;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.3px;
+  animation: pulse-badge 2s infinite;
+}
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; transform: scale(1) }
+  50% { opacity: 0.8; transform: scale(1.08) }
+}
+
+/* Weitere Umfragen Overlay */
+.weitere-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 3000;
+  align-items: center;
+  justify-content: center;
+}
+.weitere-overlay.active { display: flex }
+.weitere-panel {
+  background: #1a1a1a;
+  border-radius: 20px;
+  width: 92%;
+  max-width: 700px;
+  max-height: 88vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #4f7fa8;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.weitere-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid #333;
+  background: #1e1e1e;
+  flex-shrink: 0;
+}
+.weitere-header h2 { margin: 0; font-size: 18px; color: #e0e0e0 }
+.weitere-body {
+  overflow-y: auto;
+  padding: 1.2rem;
+  flex: 1;
+}
+.weitere-body::-webkit-scrollbar { width: 6px }
+.weitere-body::-webkit-scrollbar-track { background: #111; border-radius: 3px }
+.weitere-body::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 3px }
+.weitere-body::-webkit-scrollbar-thumb:hover { background: #4f7fa8 }
+.city-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+.city-card {
+  background: #242424;
+  border-radius: 14px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: 2px solid #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.city-card:hover { background: #2e2e2e; border-color: #4f7fa8; transform: translateY(-2px) }
+.city-card:active { transform: scale(0.97) }
+.city-card img { width: 56px; height: 56px; object-fit: contain }
+.city-card-name { font-size: 13px; font-weight: 600; color: #e0e0e0 }
+.city-card-date { font-size: 11px; color: #888 }
+.city-stats-panel { display: none; animation: fadeInUp 0.3s ease; }
+.city-stats-panel.active { display: block }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+.city-back-btn {
+  background: #2d2d2d;
+  color: #aaa;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: Inter, sans-serif;
+  transition: all 0.2s ease;
+}
+.city-back-btn:hover { background: #3a3a3a; color: #e0e0e0 }
+.city-stats-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #242424;
+  border-radius: 12px;
+}
+.city-stats-header img { width: 60px; height: 60px; object-fit: contain }
+.city-stats-title h3 { margin: 0 0 0.2rem 0; font-size: 18px }
+.city-stats-title .date { color: #888; font-size: 13px }
+@media screen and (max-width: 768px) {
+  .weitere-panel { width: 96%; max-height: 92vh; border-radius: 16px }
+  .weitere-header { padding: 1rem }
+  .city-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.8rem }
+  .city-card { padding: 0.8rem }
+  .city-card img { width: 44px; height: 44px }
+}
+@media screen and (max-width: 480px) {
+  .city-grid { grid-template-columns: repeat(2, 1fr) }
+  .weitere-panel { border-radius: 12px }
+}
+
 /* Touch-friendly improvements for mobile */
 @media (hover: none) and (pointer: coarse) {
   .state { min-height:110px }
@@ -275,6 +451,41 @@ h1 { text-align:center;padding:1rem;margin-bottom:0.5rem }
 </div>
 </div>
 </div>
+
+<div class="weitere-btn-container">
+  <button class="weitere-btn" onclick="openWeitere()" id="weitereMainBtn">
+    🏙️ Weitere Umfragen
+  </button>
+</div>
+
+<!-- Weitere Umfragen Overlay -->
+<div class="weitere-overlay" id="weitereOverlay">
+  <div class="weitere-panel">
+    <div class="weitere-header">
+      <h2 id="weitereTitle">🏙️ Weitere Umfragen</h2>
+      <button class="close-btn" onclick="closeWeitere()">Schließen</button>
+    </div>
+    <div class="weitere-body" id="weitereBody">
+      <div id="cityGrid" class="city-grid"></div>
+      <div id="cityStats" class="city-stats-panel">
+        <button class="city-back-btn" onclick="showCityGrid()">← Zurück</button>
+        <div class="city-stats-header">
+          <img id="cityStatsLogo" src="" alt="">
+          <div class="city-stats-title">
+            <h3 id="cityStatsName"></h3>
+            <div class="date" id="cityStatsDate"></div>
+          </div>
+        </div>
+        <div id="cityStatsBars"></div>
+        <div class="history-section">
+          <h3>Frühere Umfragen</h3>
+          <div id="cityStatsHistory"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 // Handy Detektor
@@ -376,10 +587,10 @@ const stateCoats = {
 
 // Bundestag
 const bundestagData = {
-  'date': '16.02.2026',
-  'results': {'CDU/CSU': 24.8, 'AfD': 24.8, 'SPD': 15.2, 'Grüne': 12, 'BSW': 3.4, 'FDP': 3.6, 'Linke': 10.8, 'Sonstige': 5.4},
+  'date': '17.02.2026',
+  'results': {'CDU/CSU': 24.9, 'AfD': 25, 'SPD': 15.1, 'Grüne': 11.8, 'BSW': 3.4, 'FDP': 3.6, 'Linke': 10.6, 'Sonstige': 5.6},
   'history': [
-    {'date': '02.02.2026', 'results': {'CDU/CSU': 25.4, 'AfD': 24.4, 'SPD': 15.2, 'Grüne': 12, 'BSW': 3.5, 'FDP': 3.5, 'Linke': 10.4, 'Sonstige': 5.6}}
+    {'date': '02.02.2026', 'results': {'CDU/CSU': 24.8, 'AfD': 24.8, 'SPD': 15.2, 'Grüne': 12, 'BSW': 3.4, 'FDP': 3.6, 'Linke': 10.8, 'Sonstige': 5.4}}
   ]
 };
 
@@ -1528,6 +1739,149 @@ function closeStateModal() {
   modal.classList.remove('active');
   document.body.style.overflow = '';
 }
+
+// ========== CITY DATA ==========
+const cityData = {
+  'Frankfurt am Main': {
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/DEU_Frankfurt_am_Main_COA.svg/960px-DEU_Frankfurt_am_Main_COA.svg.png',
+    date: '17.02.2026',
+    isNew: true,
+    results: { 'CDU': 24, 'SPD': 20, 'Grüne': 19, 'AfD': 11, 'FDP': 3, 'BSW': 2, 'Linke': 12, 'Sonstige': 9 },
+    history: [
+      { date: '14.03.2021', results: { 'CDU': 28.5, 'SPD': 24, 'Grüne': 18.4, 'AfD': 6.9, 'FDP': 6.7, 'BSW': 0, 'Linke': 4, 'Sonstige': 11.5 } },
+    ]
+  }
+};
+
+const cityColors = {
+  'CSU': '#009fe3', 'SPD': '#e3001a', 'Grüne': '#46962b', 'AfD': '#009ee0',
+  'FDP': '#ffed00', 'Linke': '#be3075', 'BSW': '#9c1a6e', 'CDU': '#111111', 'Sonstige': '#888888'
+};
+
+// Add Neu badge to button if any city is new
+(function initWeitereBtn() {
+  const hasNew = Object.values(cityData).some(c => c.isNew);
+  if (hasNew) {
+    const btn = document.getElementById('weitereMainBtn');
+    const badge = document.createElement('span');
+    badge.className = 'neue-badge';
+    badge.textContent = 'Neu';
+    btn.appendChild(badge);
+  }
+})();
+
+function openWeitere() {
+  document.getElementById('weitereOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  showCityGrid();
+}
+
+function closeWeitere() {
+  document.getElementById('weitereOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function showCityGrid() {
+  document.getElementById('cityGrid').style.display = 'grid';
+  document.getElementById('cityStats').classList.remove('active');
+  document.getElementById('weitereTitle').textContent = '🏙️ Weitere Umfragen';
+  const grid = document.getElementById('cityGrid');
+  grid.innerHTML = '';
+  Object.entries(cityData).forEach(([city, cd]) => {
+    const card = document.createElement('div');
+    card.className = 'city-card';
+    let touchStart = 0;
+    card.addEventListener('touchstart', (e) => { touchStart = e.touches[0].clientY; }, { passive: true });
+    card.addEventListener('touchend', (e) => {
+      if (Math.abs(e.changedTouches[0].clientY - touchStart) < 10) showCityStats(city);
+    });
+    card.addEventListener('click', () => {
+      if (!('ontouchstart' in window)) showCityStats(city);
+    });
+    card.innerHTML = `
+      <img src="${cd.logo}" alt="${city} Wappen">
+      <div class="city-card-name">${city}</div>
+      <div class="city-card-date">Stand: ${cd.date}</div>
+      ${cd.isNew ? '<span class="new-badge" style="margin-top:4px">Neue Umfrage</span>' : ''}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function showCityStats(city) {
+  const cd = cityData[city];
+  document.getElementById('cityGrid').style.display = 'none';
+  document.getElementById('cityStats').classList.add('active');
+  document.getElementById('weitereTitle').textContent = '🏙️ ' + city;
+  document.getElementById('cityStatsLogo').src = cd.logo;
+  document.getElementById('cityStatsName').textContent = city;
+  document.getElementById('cityStatsDate').textContent = 'Stand: ' + cd.date;
+  const barsDiv = document.getElementById('cityStatsBars');
+  barsDiv.innerHTML = '';
+  const entries = Object.entries(cd.results).sort((a, b) => {
+    if (a[0] === 'Sonstige') return 1;
+    if (b[0] === 'Sonstige') return -1;
+    return b[1] - a[1];
+  });
+  const prevResults = cd.history[0] ? cd.history[0].results : {};
+  entries.forEach(([party, val], idx) => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    const logoEl = document.createElement('img');
+    logoEl.className = 'party-logo';
+    logoEl.alt = party;
+    logoEl.src = (typeof logos !== 'undefined' && logos[party]) || '';
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    const scaleFactor = window.innerWidth <= 480 ? 5 : window.innerWidth <= 768 ? 7 : 12;
+    const col = cityColors[party] || '#666';
+    bar.style.background = col;
+    bar.style.color = (party === 'FDP') ? '#000' : '#fff';
+    bar.textContent = party;
+    const diff = val - (prevResults[party] || 0);
+    const trendText = diff > 0 ? '+' + diff.toFixed(1) + '%' : diff < 0 ? diff.toFixed(1) + '%' : '±0%';
+    const trendClass = diff > 0 ? 'up' : diff < 0 ? 'down' : 'same';
+    setTimeout(() => { bar.classList.add('animate'); bar.style.width = val > 0 ? (val * scaleFactor) + 'px' : '0px'; }, idx * 80);
+    const pct = document.createElement('div');
+    pct.className = 'percent';
+    pct.innerHTML = val + '% <span class="trend ' + trendClass + '">' + trendText + '</span>';
+    row.appendChild(logoEl);
+    row.appendChild(bar);
+    row.appendChild(pct);
+    barsDiv.appendChild(row);
+  });
+  const histDiv = document.getElementById('cityStatsHistory');
+  histDiv.innerHTML = '';
+  cd.history.forEach(h => {
+    const row = document.createElement('div');
+    row.className = 'history-row';
+    const dateDiv = document.createElement('div');
+    dateDiv.className = 'history-date';
+    dateDiv.textContent = h.date;
+    row.appendChild(dateDiv);
+    const partiesDiv = document.createElement('div');
+    partiesDiv.className = 'history-parties';
+    Object.entries(h.results).sort((a,b) => {
+      if(a[0]==='Sonstige') return 1;
+      if(b[0]==='Sonstige') return -1;
+      return b[1]-a[1];
+    }).forEach(([p, pct]) => {
+      if(pct > 0) {
+        const pd = document.createElement('div');
+        pd.className = 'history-party';
+        pd.innerHTML = '<div class="history-party-name">' + p + '</div><div class="history-party-value" style="color:' + (cityColors[p]||'#aaa') + '">' + pct + '%</div>';
+        partiesDiv.appendChild(pd);
+      }
+    });
+    row.appendChild(partiesDiv);
+    histDiv.appendChild(row);
+  });
+  document.getElementById('weitereBody').scrollTop = 0;
+}
+
+document.getElementById('weitereOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeWeitere();
+});
 
 </script>
 </body>
