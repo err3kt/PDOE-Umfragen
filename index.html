@@ -600,16 +600,20 @@ logos['CDU/CSU'] = 'https://upload.wikimedia.org/wikipedia/de/thumb/7/7a/CDU-CSU
 
 const data = {
 'Baden-Württemberg': {
-  'date': '05.03.2026', 
-  'results': {'CDU': 28, 'SPD': 8, 'AfD': 18, 'FDP': 5.5, 'BSW': 0, 'Grüne': 28, 'Linke': 5.5, 'Sonstige': 7},
+  'date': '08.03.2026',
+  'isElection': true,
+  'lastElection': {'results': {'CDU': 24.1, 'SPD': 11.0, 'AfD': 9.7, 'FDP': 10.5, 'BSW': 0, 'Grüne': 32.6, 'Linke': 3.6, 'Sonstige': 8.5}},
+  'results': {'CDU': 29.7, 'SPD': 5.5, 'AfD': 18.8, 'FDP': 4.4, 'BSW': 0, 'Grüne': 30.2, 'Linke': 4.4, 'Sonstige': 7},
   'history': [
+    {'date': '05.03.2026', 'results': {'CDU': 28, 'SPD': 8, 'AfD': 18, 'FDP': 5.5, 'BSW': 0, 'Grüne': 28, 'Linke': 5.5, 'Sonstige': 7}},
     {'date': '04.03.2026', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 20, 'FDP': 6, 'BSW': 0, 'Grüne': 24, 'Linke': 6, 'Sonstige': 8}},
-    {'date': '27.02.2026', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 19, 'FDP': 6, 'BSW': 0, 'Grüne': 25, 'Linke': 6, 'Sonstige': 8}},
-    {'date': '26.02.2026', 'results': {'CDU': 28, 'SPD': 7, 'AfD': 18, 'FDP': 6, 'BSW': 0, 'Grüne': 27, 'Linke': 5.5, 'Sonstige': 8.5}}
+    {'date': '27.02.2026', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 19, 'FDP': 6, 'BSW': 0, 'Grüne': 25, 'Linke': 6, 'Sonstige': 8}}
   ]
 }, 
 'Bayern': {
-  'date': '03.03.2026', 
+  'date': '03.03.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CSU': 37.0, 'SPD': 8.4, 'AfD': 14.6, 'FDP': 3.0, 'BSW': 0, 'Grüne': 9.2, 'FW': 15.8, 'Linke': 1.5, 'Sonstige': 10.5}},
   'results': {'CSU': 39, 'SPD': 7, 'AfD': 18, 'FDP': 2, 'BSW': 2, 'Grüne': 13, 'FW': 10, 'Linke': 3, 'Sonstige': 6},
   'history': [
     {'date': '14.02.2026', 'results': {'CSU': 40, 'SPD': 7, 'AfD': 18, 'FDP': 2, 'BSW': 1, 'Grüne': 11, 'FW': 12, 'Linke': 3, 'Sonstige': 6}},
@@ -618,7 +622,9 @@ const data = {
   ]
 }, 
 'Berlin': {
-  'date': '25.02.2026', 
+  'date': '25.02.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 28.2, 'SPD': 18.4, 'AfD': 9.1, 'FDP': 4.6, 'BSW': 0, 'Grüne': 13.9, 'Linke': 12.2, 'Sonstige': 13.6}},
   'results': {'CDU': 22, 'SPD': 16, 'AfD': 17, 'FDP': 4, 'BSW': 4, 'Grüne': 15, 'Linke': 15, 'Sonstige': 7},
   'history': [
     {'date': '26.01.2026', 'results': {'CDU': 22, 'SPD': 15, 'AfD': 16, 'FDP': 3, 'BSW': 3, 'Grüne': 17, 'Linke': 17, 'Sonstige': 7}},
@@ -627,7 +633,9 @@ const data = {
   ]
 }, 
 'Brandenburg': {
-  'date': '15.01.2026', 
+  'date': '15.01.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 15.6, 'SPD': 30.9, 'AfD': 29.2, 'FDP': 1.3, 'BSW': 13.5, 'Grüne': 4.1, 'Linke': 3.0, 'Sonstige': 2.4}},
   'results': {'CDU': 13, 'SPD': 25, 'AfD': 34, 'FDP': 0, 'BSW': 8, 'Grüne': 5, 'Linke': 8, 'Sonstige': 7},
   'history': [
     {'date': '10.12.2025', 'results': {'CDU': 14, 'SPD': 22, 'AfD': 35, 'FDP': 0, 'BSW': 7, 'Grüne': 5, 'Linke': 9, 'Sonstige': 8}},
@@ -636,7 +644,9 @@ const data = {
   ]
 }, 
 'Bremen': {
-  'date': '28.04.2025', 
+  'date': '28.04.2025',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 25.9, 'SPD': 29.8, 'AfD': 11.0, 'FDP': 5.1, 'BSW': 0, 'Grüne': 11.7, 'Linke': 10.9, 'Sonstige': 5.6}},
   'results': {'CDU': 22, 'SPD': 25, 'AfD': 15, 'FDP': 0, 'BSW': 0, 'Grüne': 14, 'Linke': 13, 'Sonstige': 11},
   'history': [
     {'date': 'XX.XX.XXXX', 'results': {'CDU': 0, 'SPD': 0, 'AfD': 0, 'FDP': 0, 'BSW': 0, 'Grüne': 0, 'Linke': 0, 'Sonstige': 0}},
@@ -645,7 +655,9 @@ const data = {
   ]
 }, 
 'Hamburg': {
-  'date': '01.03.2025', 
+  'date': '01.03.2025',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 24.2, 'SPD': 24.2, 'AfD': 7.4, 'FDP': 4.97, 'BSW': 0, 'Grüne': 12.2, 'Linke': 12.2, 'Sonstige': 14.83}},
   'results': {'CDU': 18, 'SPD': 33.5, 'AfD': 9, 'FDP': 2.5, 'BSW': 2.5, 'Grüne': 16.5, 'Linke': 14, 'Sonstige': 4},
   'history': [
     {'date': '27.02.2025', 'results': {'CDU': 18, 'SPD': 33, 'AfD': 9, 'FDP': 0, 'BSW': 0, 'Grüne': 17, 'Linke': 12, 'Sonstige': 11}},
@@ -654,7 +666,9 @@ const data = {
   ]
 }, 
 'Hessen': {
-  'date': '02.02.2026', 
+  'date': '02.02.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 34.6, 'SPD': 15.1, 'AfD': 18.4, 'FDP': 5.0, 'BSW': 0, 'Grüne': 14.8, 'Linke': 3.1, 'Sonstige': 9.0}},
   'results': {'CDU': 32, 'SPD': 16, 'AfD': 20, 'FDP': 3, 'BSW': 0, 'Grüne': 14, 'Linke': 6, 'Sonstige': 9},
   'history': [
     {'date': '09.10.2025', 'results': {'CDU': 32, 'SPD': 15, 'AfD': 20, 'FDP': 4, 'BSW': 3, 'Grüne': 12, 'Linke': 7, 'Sonstige': 7}},
@@ -663,7 +677,9 @@ const data = {
   ]
 }, 
 'Mecklenburg-Vorpommern': {
-  'date': '19.02.2026', 
+  'date': '19.02.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 13.3, 'SPD': 39.6, 'AfD': 16.7, 'FDP': 2.1, 'BSW': 0, 'Grüne': 4.2, 'Linke': 9.9, 'Sonstige': 14.2}},
   'results': {'CDU': 13, 'SPD': 23, 'AfD': 37, 'FDP': 2, 'BSW': 5, 'Grüne': 4, 'Linke': 11, 'Sonstige': 5},
   'history': [
     {'date': '27.01.2026', 'results': {'CDU': 13, 'SPD': 25, 'AfD': 35, 'FDP': 0, 'BSW': 6, 'Grüne': 4, 'Linke': 12, 'Sonstige': 5}},
@@ -672,7 +688,9 @@ const data = {
   ]
 }, 
 'Niedersachsen': {
-  'date': '25.02.2026', 
+  'date': '25.02.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 28.1, 'SPD': 33.4, 'AfD': 10.9, 'FDP': 4.7, 'BSW': 0, 'Grüne': 14.5, 'Linke': 2.7, 'Sonstige': 5.7}},
   'results': {'CDU': 27, 'SPD': 26, 'AfD': 21, 'FDP': 3, 'BSW': 0, 'Grüne': 10, 'Linke': 7, 'Sonstige': 6},
   'history': [
     {'date': '19.11.2025', 'results': {'CDU': 26, 'SPD': 26, 'AfD': 20, 'FDP': 3, 'BSW': 3, 'Grüne': 12, 'Linke': 6, 'Sonstige': 4}},
@@ -681,7 +699,9 @@ const data = {
   ]
 }, 
 'Nordrhein-Westfalen': {
-  'date': '01.02.2026', 
+  'date': '01.02.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 35.7, 'SPD': 26.7, 'AfD': 5.4, 'FDP': 5.9, 'BSW': 0, 'Grüne': 18.2, 'Linke': 2.0, 'Sonstige': 6.1}},
   'results': {'CDU': 35, 'SPD': 20, 'AfD': 15, 'FDP': 4, 'BSW': 0, 'Grüne': 13, 'Linke': 6, 'Sonstige': 7},
   'history': [
     {'date': '23.11.2025', 'results': {'CDU': 36, 'SPD': 19, 'AfD': 16, 'FDP': 5, 'BSW': 0, 'Grüne': 12, 'Linke': 7, 'Sonstige': 5}},
@@ -690,7 +710,9 @@ const data = {
   ]
 }, 
 'Rheinland-Pfalz': {
-  'date': '26.02.2026', 
+  'date': '26.02.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 27.7, 'SPD': 35.7, 'AfD': 8.3, 'FDP': 5.5, 'BSW': 0, 'Grüne': 9.3, 'Linke': 2.5, 'Sonstige': 11.0}},
   'results': {'CDU': 28, 'SPD': 27, 'AfD': 19, 'FDP': 0, 'BSW': 0, 'Grüne': 9, 'Linke': 5, 'Sonstige': 12},
   'history': [
     {'date': '22.01.2026', 'results': {'CDU': 29, 'SPD': 26, 'AfD': 18, 'FDP': 0, 'BSW': 0, 'Grüne': 10, 'Linke': 6, 'Sonstige': 11}},
@@ -699,7 +721,9 @@ const data = {
   ]
 }, 
 'Saarland': {
-  'date': '03.12.2025', 
+  'date': '03.12.2025',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 28.5, 'SPD': 43.5, 'AfD': 5.7, 'FDP': 4.0, 'BSW': 0, 'Grüne': 5.1, 'Linke': 6.5, 'Sonstige': 6.7}},
   'results': {'CDU': 25, 'SPD': 27, 'AfD': 23, 'FDP': 0, 'BSW': 3, 'Grüne': 7, 'Linke': 7, 'Sonstige': 8},
   'history': [
     {'date': '02.04.2025', 'results': {'CDU': 27, 'SPD': 30, 'AfD': 17, 'FDP': 3, 'BSW': 4, 'Grüne': 6, 'Linke': 8, 'Sonstige': 5}},
@@ -708,7 +732,9 @@ const data = {
   ]
 }, 
 'Sachsen': {
-  'date': '06.01.2026', 
+  'date': '06.01.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 31.9, 'SPD': 7.3, 'AfD': 30.6, 'FDP': 0, 'BSW': 11.8, 'Grüne': 5.1, 'Linke': 4.5, 'Sonstige': 8.8}},
   'results': {'CDU': 29, 'SPD': 6, 'AfD': 35, 'FDP': 1, 'BSW': 8, 'Grüne': 6, 'Linke': 10, 'Sonstige': 5},
   'history': [
     {'date': '04.08.2025', 'results': {'CDU': 27, 'SPD': 6, 'AfD': 35, 'FDP': 1, 'BSW': 9, 'Grüne': 6, 'Linke': 10, 'Sonstige': 6}},
@@ -717,7 +743,9 @@ const data = {
   ]
 }, 
 'Sachsen-Anhalt': {
-  'date': '27.01.2026', 
+  'date': '27.01.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 37.1, 'SPD': 8.4, 'AfD': 20.8, 'FDP': 0, 'BSW': 0, 'Grüne': 5.9, 'Linke': 11.0, 'Sonstige': 16.8}},
   'results': {'CDU': 26, 'SPD': 8, 'AfD': 39, 'FDP': 2, 'BSW': 6, 'Grüne': 3, 'Linke': 11, 'Sonstige': 5},
   'history': [
     {'date': '15.10.2025', 'results': {'CDU': 26, 'SPD': 6, 'AfD': 40, 'FDP': 3, 'BSW': 6, 'Grüne': 3, 'Linke': 11, 'Sonstige': 5}},
@@ -726,7 +754,9 @@ const data = {
   ]
 }, 
 'Schleswig-Holstein': {
-  'date': '22.01.2025', 
+  'date': '22.01.2025',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 43.4, 'SPD': 16.0, 'AfD': 5.3, 'FDP': 6.4, 'BSW': 0, 'Grüne': 18.3, 'Linke': 1.7, 'Sonstige': 8.9}},
   'results': {'CDU': 39, 'SPD': 16, 'AfD': 14, 'FDP': 4, 'BSW': 3, 'Grüne': 13, 'Linke': 0, 'Sonstige': 11},
   'history': [
     {'date': '15.11.2023', 'results': {'CDU': 40, 'SPD': 15, 'AfD': 12, 'FDP': 6, 'BSW': 0, 'Grüne': 16, 'Linke': 0, 'Sonstige': 11}},
@@ -735,7 +765,9 @@ const data = {
   ]
 }, 
 'Thüringen': {
-  'date': '05.02.2026', 
+  'date': '05.02.2026',
+  'isElection': false,
+  'lastElection': {'results': {'CDU': 31.4, 'SPD': 6.1, 'AfD': 23.4, 'FDP': 0, 'BSW': 15.4, 'Grüne': 5.2, 'Linke': 13.1, 'Sonstige': 5.4}},
   'results': {'CDU': 24, 'SPD': 7, 'AfD': 38, 'FDP': 0, 'BSW': 7, 'Grüne': 3, 'Linke': 14, 'Sonstige': 7},
   'history': [
     {'date': '11.12.2025', 'results': {'CDU': 24, 'SPD': 6, 'AfD': 39, 'FDP': 0, 'BSW': 7, 'Grüne': 3, 'Linke': 14, 'Sonstige': 7}},
@@ -869,12 +901,14 @@ function buildStates(){
     d.appendChild(contentDiv);
     
     // Add "Neue Umfrage" badge at bottom if this has the newest date
-    if(data[s].date === newest.dateString) {
+    // Always show badge for election states, or if newest poll
+    if(data[s].isElection === true || data[s].date === newest.dateString) {
       const badgeContainer = document.createElement("div");
       badgeContainer.className = "badge-container";
       const badge = document.createElement("span");
       badge.className = "new-badge";
-      badge.textContent = "Neue Umfrage";
+      badge.textContent = data[s].isElection === true ? "Ergebnis" : "Neue Umfrage";
+      if(data[s].isElection === true) badge.style.background = "#4f7fa8";
       badgeContainer.appendChild(badge);
       d.appendChild(badgeContainer);
     }
@@ -915,12 +949,16 @@ function showState(state){
 
   const bars=document.getElementById("bars");
   bars.innerHTML="";
-  document.getElementById("title").innerText=state;
-  document.getElementById("date").innerText="Stand: "+data[state].date;
+  const isElection = data[state].isElection === true;
+  document.getElementById("title").innerText = state + (isElection ? ' \u2013 Ergebnis' : '');
+  document.getElementById("date").innerText = (isElection ? 'Ergebnis: ' : 'Stand: ') + data[state].date;
   
-  // Calculate trends from most recent history
+  // Calculate trends: use lastElection if isElection=true, else history[0]
   const currentResults = data[state].results;
-  const previousResults = data[state].history[0].results;
+  const le = data[state].lastElection;
+  const previousResults = (isElection && le && Object.keys(le.results||{}).length > 0)
+    ? le.results
+    : (data[state].history[0] ? data[state].history[0].results : {});
   
   let entries=Object.entries(currentResults).sort((a,b)=>{
     // Always put Sonstige last
@@ -930,6 +968,7 @@ function showState(state){
     return b[1]-a[1];
   });
   entries.forEach(([p,v], index)=>{
+    if(v === 0) return;
     const r=document.createElement("div");
     r.className="bar-row";
     
@@ -985,13 +1024,22 @@ function showState(state){
     
     const pc=document.createElement("div");
     pc.className="percent";
-    pc.innerHTML = v+'% <span class="trend '+trendClass+'">'+trendText+'</span>';
+    const trendTitle = isElection ? 'Veraenderung zur letzten Wahl' : '';
+    pc.innerHTML = v+'% <span class="trend '+trendClass+'" title="'+trendTitle+'">'+trendText+'</span>';
     
     r.appendChild(logo);
     r.appendChild(b);
     r.appendChild(pc);
     bars.appendChild(r);
   });
+
+  // Show change label when isElection
+  if(isElection) {
+    const changeLabel = document.createElement("div");
+    changeLabel.style.cssText = "font-size:11px;color:#888;margin-bottom:0.5rem;margin-top:-0.3rem;text-align:right;padding-right:4px;";
+    changeLabel.textContent = "± Veränderung zur letzten Wahl";
+    bars.insertBefore(changeLabel, bars.firstChild);
+  }
   
   // Add seats button after bars
   const seatsBtn = document.createElement("button");
@@ -1004,6 +1052,12 @@ function showState(state){
   const historyDiv = document.getElementById("history");
   historyDiv.innerHTML = "";
   
+  // Update history heading
+  const historyHeading = document.querySelector('.panel .history-section h3');
+  if(historyHeading) historyHeading.textContent = 'Frühere Umfragen';
+
+
+
   data[state].history.forEach(h => {
     const row = document.createElement("div");
     row.className = "history-row";
@@ -1094,6 +1148,7 @@ function showBundestag() {
     return b[1] - a[1];
   });
   entries.forEach(([p, v], index) => {
+    if(v === 0) return;
     const r = document.createElement("div");
     r.className = "bar-row";
     
@@ -1160,8 +1215,6 @@ function showBundestag() {
 
 // Elections 2026 data
 const elections2026 = [
-  { state: 'Baden-Württemberg', type: 'Landtag', date: '08.03.2026' },
-  { state: 'Bayern', type: 'Kommunalwahl', date: '08.03.2026' },
   { state: 'Hessen', type: 'Kommunalwahl', date: '15.03.2026' },
   { state: 'Rheinland-Pfalz', type: 'Landtag', date: '22.03.2026' },
   { state: 'Sachsen-Anhalt', type: 'Landtag', date: '06.09.2026' },
@@ -1592,12 +1645,16 @@ function openStateModal(state) {
   // Set background coat of arms for the state
   modal.style.setProperty('--bg-coat', `url('${stateCoats[state]}')`);
   
-  document.getElementById('stateModalTitle').innerText = state;
-  document.getElementById('stateModalDate').innerText = "Stand: " + data[state].date;
+  const isElectionModal = data[state].isElection === true;
+  document.getElementById('stateModalTitle').innerText = state + (isElectionModal ? ' – Ergebnis' : '');
+  document.getElementById('stateModalDate').innerText = (isElectionModal ? 'Ergebnis: ' : 'Stand: ') + data[state].date;
   
-  // Calculate trends from most recent history
+  // Calculate trends: use lastElection if isElection=true, else history[0]
   const currentResults = data[state].results;
-  const previousResults = data[state].history[0].results;
+  const leModal = data[state].lastElection;
+  const previousResults = (isElectionModal && leModal && Object.keys(leModal.results||{}).length > 0)
+    ? leModal.results
+    : (data[state].history[0] ? data[state].history[0].results : {});
   
   let entries = Object.entries(currentResults).sort((a,b) => {
     // Always put Sonstige last
@@ -1608,6 +1665,7 @@ function openStateModal(state) {
   });
   
   entries.forEach(([p,v], index) => {
+    if(v === 0) return;
     const r = document.createElement("div");
     r.className = "bar-row";
     
@@ -1663,13 +1721,21 @@ function openStateModal(state) {
     
     const pc = document.createElement("div");
     pc.className = "percent";
-    pc.innerHTML = v + '% <span class="trend ' + trendClass + '">' + trendText + '</span>';
+    pc.innerHTML = v + '% <span class="trend ' + trendClass + '" title="' + (isElectionModal ? 'Veraenderung zur letzten Wahl' : '') + '">' + trendText + '</span>';
     
     r.appendChild(logo);
     r.appendChild(b);
     r.appendChild(pc);
     bars.appendChild(r);
   });
+
+  // Show change label when isElection (mobile modal)
+  if(isElectionModal) {
+    const changeLabel = document.createElement("div");
+    changeLabel.style.cssText = "font-size:11px;color:#888;margin-bottom:0.5rem;margin-top:-0.3rem;text-align:right;padding-right:4px;";
+    changeLabel.textContent = "± Veränderung zur letzten Wahl";
+    bars.insertBefore(changeLabel, bars.firstChild);
+  }
   
   // Add seats button after bars
   const seatsBtn = document.createElement("button");
@@ -1684,7 +1750,13 @@ function openStateModal(state) {
   // Display historical data
   const historyDiv = document.getElementById("stateModalHistory");
   historyDiv.innerHTML = "";
-  
+
+  // Update history heading for modal
+  const stateModalHistoryHeading = document.querySelector('.state-modal-body .history-section h3');
+  if(stateModalHistoryHeading) stateModalHistoryHeading.textContent = 'Frühere Umfragen';
+
+
+
   data[state].history.forEach(h => {
     const row = document.createElement("div");
     row.className = "history-row";
