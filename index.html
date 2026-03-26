@@ -51,17 +51,7 @@ body::after {
   z-index:0;
 }
 
-body::before {
-  content:"";
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background-image:url('reichstag.png');
-  background-size:cover;
-  background-position:center;
-  filter:blur(12px) brightness(0.12) saturate(0.3);
-  z-index:-1;
-}
+
 
 /* Header */
 h1 { 
@@ -2248,7 +2238,7 @@ function closeStateModal() {
 const cityData = {
   'Frankfurt am Main': {
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/DEU_Frankfurt_am_Main_COA.svg/960px-DEU_Frankfurt_am_Main_COA.svg.png',
-    date: '17.02.2026',
+    date: '18.02.2026',
     isNew: true,
     results: { 'CDU': 24, 'SPD': 20, 'Grüne': 19, 'AfD': 11, 'FDP': 3, 'BSW': 2, 'Linke': 12, 'Sonstige': 9 },
     history: [
