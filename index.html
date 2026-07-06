@@ -392,6 +392,61 @@ h1 {
   transform:translateY(-1px);
 }
 
+/* Diagram button */
+.diagram-btn { 
+  background: linear-gradient(135deg, rgba(62,207,142,0.15), rgba(62,207,142,0.08));
+  color: var(--green);
+  border:1px solid rgba(62,207,142,0.3);
+  padding:7px 16px;
+  border-radius:8px;
+  font-size:11px;
+  font-weight:700;
+  font-family: var(--font-mono);
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  cursor:pointer;
+  margin-top:0.6rem;
+  margin-left:0.6rem;
+  transition:all 0.25s ease;
+  position:relative;z-index:1;
+}
+.diagram-btn:hover { 
+  background: rgba(62,207,142,0.2);
+  border-color: var(--green);
+  box-shadow: 0 0 16px rgba(62,207,142,0.2);
+  transform:translateY(-1px);
+}
+
+/* Diagram modal */
+#diagramModal { z-index: 2500; }
+.diagram-modal-content {
+  background:#0d1117;
+  border-radius:16px;
+  width:92%;max-width:900px;max-height:90vh;
+  overflow:hidden;position:relative;
+  border:1px solid var(--border-bright);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(62,207,142,0.1);
+}
+.diagram-body {
+  padding:1.2rem 1.5rem 1.5rem;
+  max-height:calc(90vh - 70px);
+  overflow-y:auto;
+}
+.diagram-chart-wrap {
+  background:var(--surface);
+  border-radius:12px;
+  padding:1rem 0.6rem 0.6rem;
+  border:1px solid var(--border);
+}
+.diagram-note {
+  color:var(--text-muted);
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:0.03em;
+  margin-top:0.8rem;
+  text-align:center;
+}
+
 /* Modals */
 .modal-overlay { 
   display:none;
@@ -832,6 +887,18 @@ h1 {
 </div>
 </div>
 </div>
+<div class="modal-overlay" id="diagramModal">
+<div class="diagram-modal-content">
+<div class="modal-header">
+<h2 id="diagramModalTitle">Umfragetrend</h2>
+<button class="close-btn" onclick="closeDiagramModal()">Schließen</button>
+</div>
+<div class="diagram-body">
+<div class="diagram-chart-wrap" id="diagramChartWrap"></div>
+<div class="diagram-note">Verlauf der veröffentlichten Umfragewerte über die Zeit</div>
+</div>
+</div>
+</div>
 <div class="state-modal-overlay" id="stateModal">
 <div class="state-modal-header">
 <h2 id="stateModalTitle">Bundesland</h2>
@@ -1013,7 +1080,35 @@ const bundestagData = {
   'date': '24.06.2026',
   'results': {'CDU/CSU': 22.5, 'AfD': 28, 'SPD': 12.8, 'Grüne': 13.2, 'BSW': 3.5, 'FDP': 4.5, 'Linke': 10.7, 'Sonstige': 4.8},
   'history': [
-    {'date': '05.03.2026', 'results': {'CDU/CSU': 22, 'AfD': 28, 'SPD': 12.2, 'Grüne': 13.9, 'BSW': 3.2, 'FDP': 4.3, 'Linke': 11.1, 'Sonstige': 5.3}}
+    {'date': '19.06.2026', 'results': {'CDU/CSU': 22, 'AfD': 28, 'SPD': 12.2, 'Grüne': 13.9, 'BSW': 3.2, 'FDP': 4.3, 'Linke': 11.1, 'Sonstige': 5.3}},
+    {'date': '16.06.2026', 'results': {'CDU/CSU': 21.8, 'AfD': 27.8, 'SPD': 12.4, 'Grüne': 14.2, 'BSW': 3.1, 'FDP': 4.2, 'Linke': 11.2, 'Sonstige': 5.3}},
+    {'date': '10.06.2026', 'results': {'CDU/CSU': 22.8, 'AfD': 27.5, 'SPD': 12, 'Grüne': 14.3, 'BSW': 3, 'FDP': 3.9, 'Linke': 10.7, 'Sonstige': 5.8}},
+    {'date': '06.06.2026', 'results': {'CDU/CSU': 22.3, 'AfD': 27.5, 'SPD': 12.4, 'Grüne': 14.3, 'BSW': 2.7, 'FDP': 4.1, 'Linke': 10.5, 'Sonstige': 6.2}},
+    {'date': '28.05.2026', 'results': {'CDU/CSU': 22.6, 'AfD': 27.6, 'SPD': 12.2, 'Grüne': 14.3, 'BSW': 3, 'FDP': 3.7, 'Linke': 11.1, 'Sonstige': 5.5}},
+    {'date': '19.05.2026', 'results': {'CDU/CSU': 22.6, 'AfD': 27.7, 'SPD': 12.5, 'Grüne': 13.9, 'BSW': 3.1, 'FDP': 3.8, 'Linke': 11.1, 'Sonstige': 5.3}},
+    {'date': '12.05.2026', 'results': {'CDU/CSU': 22.9, 'AfD': 27.6, 'SPD': 12.4, 'Grüne': 13.9, 'BSW': 3.1, 'FDP': 3.8, 'Linke': 10.8, 'Sonstige': 5.5}},
+    {'date': '08.05.2026', 'results': {'CDU/CSU': 23.6, 'AfD': 27.2, 'SPD': 12.3, 'Grüne': 14.2, 'BSW': 2.8, 'FDP': 3.7, 'Linke': 10.7, 'Sonstige': 5.5}},
+    {'date': '04.05.2026', 'results': {'CDU/CSU': 23.2, 'AfD': 27.3, 'SPD': 12.6, 'Grüne': 14, 'BSW': 3, 'FDP': 3.5, 'Linke': 11, 'Sonstige': 5.4}},
+    {'date': '28.04.2026', 'results': {'CDU/CSU': 23.3, 'AfD': 27.1, 'SPD': 12.8, 'Grüne': 13.9, 'BSW': 3.1, 'FDP': 3.5, 'Linke': 11, 'Sonstige': 5.3}},
+    {'date': '27.04.2026', 'results': {'CDU/CSU': 23.8, 'AfD': 26.9, 'SPD': 12.7, 'Grüne': 13.8, 'BSW': 3, 'FDP': 3.4, 'Linke': 10.8, 'Sonstige': 5.6}},
+    {'date': '25.04.2026', 'results': {'CDU/CSU': 24.4, 'AfD': 26.4, 'SPD': 13, 'Grüne': 13.6, 'BSW': 3.5, 'FDP': 3.6, 'Linke': 10.6, 'Sonstige': 4.9}},
+    {'date': '20.04.2026', 'results': {'CDU/CSU': 24.4, 'AfD': 26.1, 'SPD': 13, 'Grüne': 13.7, 'BSW': 3.7, 'FDP': 3.7, 'Linke': 10.6, 'Sonstige': 4.8}},
+    {'date': '15.04.2026', 'results': {'CDU/CSU': 24.6, 'AfD': 25.8, 'SPD': 13, 'Grüne': 13.9, 'BSW': 3.4, 'FDP': 3.5, 'Linke': 10.4, 'Sonstige': 5.4}},
+    {'date': '14.04.2026', 'results': {'CDU/CSU': 24.8, 'AfD': 25.4, 'SPD': 13.2, 'Grüne': 13.9, 'BSW': 3.1, 'FDP': 3.7, 'Linke': 10.6, 'Sonstige': 5.3}},
+    {'date': '10.04.2026', 'results': {'CDU/CSU': 25.2, 'AfD': 25.4, 'SPD': 13, 'Grüne': 13.8, 'BSW': 3.2, 'FDP': 3.6, 'Linke': 10.5, 'Sonstige': 5.3}},
+    {'date': '02.04.2026', 'results': {'CDU/CSU': 25.6, 'AfD': 25.4, 'SPD': 13.1, 'Grüne': 14, 'BSW': 3.1, 'FDP': 3.7, 'Linke': 10.3, 'Sonstige': 4.8}},
+    {'date': '27.03.2026', 'results': {'CDU/CSU': 26.4, 'AfD': 25.2, 'SPD': 14, 'Grüne': 13.3, 'BSW': 3.2, 'FDP': 3, 'Linke': 9.8, 'Sonstige': 5.1}},
+    {'date': '24.03.2026', 'results': {'CDU/CSU': 26.4, 'AfD': 24.6, 'SPD': 14, 'Grüne': 13.2, 'BSW': 3.3, 'FDP': 3, 'Linke': 9.8, 'Sonstige': 5.7}},
+    {'date': '17.03.2026', 'results': {'CDU/CSU': 26.5, 'AfD': 23.8, 'SPD': 14.4, 'Grüne': 13, 'BSW': 3.3, 'FDP': 3, 'Linke': 10.3, 'Sonstige': 5.7}},
+    {'date': '13.03.2026', 'results': {'CDU/CSU': 26.2, 'AfD': 23.9, 'SPD': 14.9, 'Grüne': 12.5, 'BSW': 3.3, 'FDP': 3.4, 'Linke': 10.3, 'Sonstige': 5.5}},
+    {'date': '07.03.2026', 'results': {'CDU/CSU': 26.2, 'AfD': 24, 'SPD': 14.8, 'Grüne': 12.4, 'BSW': 3.2, 'FDP': 3.3, 'Linke': 10.4, 'Sonstige': 5.7}},
+    {'date': '05.03.2026', 'results': {'CDU/CSU': 26.1, 'AfD': 24, 'SPD': 15, 'Grüne': 12.5, 'BSW': 3.3, 'FDP': 3.3, 'Linke': 10.2, 'Sonstige': 5.6}},
+    {'date': '03.03.2026', 'results': {'CDU/CSU': 26.1, 'AfD': 24.2, 'SPD': 15.4, 'Grüne': 11.9, 'BSW': 3, 'FDP': 3.3, 'Linke': 10.4, 'Sonstige': 5.7}},
+    {'date': '02.03.2026', 'results': {'CDU/CSU': 26, 'AfD': 24.2, 'SPD': 15.2, 'Grüne': 11.8, 'BSW': 3, 'FDP': 3.3, 'Linke': 10.6, 'Sonstige': 5.9}},
+    {'date': '28.02.2026', 'results': {'CDU/CSU': 25.6, 'AfD': 24.4, 'SPD': 15.2, 'Grüne': 11.6, 'BSW': 3.2, 'FDP': 3.4, 'Linke': 10.6, 'Sonstige': 6}},
+    {'date': '27.02.2026', 'results': {'CDU/CSU': 25.4, 'AfD': 24.4, 'SPD': 15.1, 'Grüne': 11.6, 'BSW': 3.3, 'FDP': 3.5, 'Linke': 10.8, 'Sonstige': 5.9}},
+    {'date': '24.02.2026', 'results': {'CDU/CSU': 24.8, 'AfD': 24.8, 'SPD': 15.1, 'Grüne': 11.8, 'BSW': 3.3, 'FDP': 3.7, 'Linke': 11, 'Sonstige': 5.5}},
+    {'date': '22.02.2026', 'results': {'CDU/CSU': 24.8, 'AfD': 25, 'SPD': 15.2, 'Grüne': 11.8, 'BSW': 3.2, 'FDP': 3.6, 'Linke': 10.8, 'Sonstige': 5.6}}
   ]
 };
 
@@ -1030,7 +1125,10 @@ const data = {
   'history': [
     {'date': '08.03.2026', 'results': {'CDU': 29.7, 'SPD': 5.5, 'AfD': 18.8, 'FDP': 4.4, 'BSW': 0, 'Grüne': 30.2, 'Linke': 4.4, 'Sonstige': 7}},
     {'date': '05.03.2026', 'results': {'CDU': 28, 'SPD': 8, 'AfD': 18, 'FDP': 5.5, 'BSW': 0, 'Grüne': 28, 'Linke': 5.5, 'Sonstige': 7}},
-    {'date': '04.03.2026', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 20, 'FDP': 6, 'BSW': 0, 'Grüne': 24, 'Linke': 6, 'Sonstige': 8}}
+    {'date': '04.03.2026', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 20, 'FDP': 6, 'BSW': 0, 'Grüne': 24, 'Linke': 6, 'Sonstige': 8}},
+	{'date': '27.02.2026', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 19, 'FDP': 6, 'BSW': 0, 'Grüne': 25, 'Linke': 6, 'Sonstige': 8}},
+    {'date': '26.02.2026', 'results': {'CDU': 28, 'SPD': 7, 'AfD': 18, 'FDP': 6, 'BSW': 0, 'Grüne': 27, 'Linke': 5.5, 'Sonstige': 8.5}},
+	{'date': '23.02.2026', 'results': {'CDU': 28, 'SPD': 10, 'AfD': 20, 'FDP': 6, 'BSW': 3, 'Grüne': 22, 'Linke': 7, 'Sonstige': 4}}
   ]
 }, 
 'Bayern': {
@@ -1201,6 +1299,165 @@ const data = {
 };
 
 let currentState = null;
+
+// ========== TREND DIAGRAM ==========
+function parseDateSafe(dateStr) {
+  if(!dateStr) return null;
+  const parts = dateStr.split('.');
+  if(parts.length !== 3 || dateStr.includes('X')) return null;
+  return new Date(parts[2], parts[1] - 1, parts[0]);
+}
+
+function buildTimeline(currentDate, currentResults, historyArr) {
+  const points = [];
+  (historyArr || []).forEach(h => {
+    const d = parseDateSafe(h.date);
+    if(d) points.push({ dateStr: h.date, dateObj: d, results: h.results });
+  });
+  const curD = parseDateSafe(currentDate) || new Date();
+  points.push({ dateStr: currentDate, dateObj: curD, results: currentResults });
+  points.sort((a, b) => a.dateObj - b.dateObj);
+  return points;
+}
+
+function renderTrendChart(container, points) {
+  container.innerHTML = "";
+
+  const partySet = new Set();
+  points.forEach(pt => Object.keys(pt.results || {}).forEach(p => {
+    if((pt.results[p] || 0) > 0) partySet.add(p);
+  }));
+  const parties = Array.from(partySet);
+
+  const seriesData = parties.map(p => ({
+    party: p,
+    color: colors[p] || '#888',
+    values: points.map(pt => pt.results[p] || 0)
+  }));
+
+  const allValues = seriesData.flatMap(s => s.values);
+  let minV = Math.min(...allValues, 0);
+  let maxV = Math.max(...allValues, 5);
+  minV = Math.max(0, Math.floor((minV - 2) / 5) * 5);
+  maxV = Math.ceil((maxV + 2) / 5) * 5;
+  if(maxV <= minV) maxV = minV + 5;
+
+  const isNarrow = window.innerWidth <= 600;
+  const W = isNarrow ? 560 : 780;
+  const H = isNarrow ? 420 : 440;
+  const marginTop = 50, marginBottom = 14, marginLeft = 30, marginRight = isNarrow ? 118 : 128;
+  const chartW = W - marginLeft - marginRight;
+  const chartH = H - marginTop - marginBottom;
+
+  const n = points.length;
+  const xFor = i => marginLeft + (n === 1 ? chartW / 2 : (i / (n - 1)) * chartW);
+  const yFor = v => marginTop + chartH - ((v - minV) / (maxV - minV)) * chartH;
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;font-family:'JetBrains Mono',monospace;">`;
+
+  // Gridlines + y labels
+  const steps = 5;
+  const gridStep = (maxV - minV) / steps;
+  for(let i = 0; i <= steps; i++) {
+    const v = minV + gridStep * i;
+    const y = yFor(v);
+    svg += `<line x1="${marginLeft}" y1="${y.toFixed(1)}" x2="${(W - marginRight).toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`;
+    svg += `<text x="${marginLeft - 6}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#5a6070">${Math.round(v)}</text>`;
+  }
+
+  // X gridlines (all points) + date labels (thinned out to avoid crowding)
+  const maxLabels = isNarrow ? 6 : 11;
+  const labelStep = Math.max(1, Math.ceil((n - 1) / (maxLabels - 1)));
+  points.forEach((pt, i) => {
+    const x = xFor(i);
+    svg += `<line x1="${x.toFixed(1)}" y1="${marginTop}" x2="${x.toFixed(1)}" y2="${H - marginBottom}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+    const showLabel = (i % labelStep === 0) || (i === n - 1);
+    if(showLabel) {
+      svg += `<text x="${x.toFixed(1)}" y="${marginTop - 12}" text-anchor="start" font-size="10" fill="#8892a0" transform="rotate(-40 ${x.toFixed(1)} ${marginTop - 12})">${pt.dateStr}</text>`;
+    }
+  });
+
+  // Lines + dots (glow filter to match site aesthetic)
+  svg += `<defs><filter id="lineGlow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="2.2" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>`;
+
+  // Anti-overlap: when two or more parties share the same (or near-identical) value at a
+  // given point, their lines/dots land on the exact same pixels. Since strokes are painted
+  // in order, a later series completely covers an earlier one at those pixels, making it
+  // look like that party's line vanished. To fix this we detect such "ties" at every x
+  // position and nudge the tied points apart by a few pixels so every line stays visible.
+  const rawY = seriesData.map(s => s.values.map(v => yFor(v)));
+  const jitterY = rawY.map(arr => arr.slice());
+  const TIE_THRESHOLD = 1.5; // px — values closer than this are considered overlapping
+  const JITTER_STEP = 3.2;   // px separation applied between tied lines
+
+  for(let i = 0; i < n; i++) {
+    const orderBySeries = seriesData.map((_, si) => si)
+      .sort((a, b) => rawY[a][i] - rawY[b][i]);
+    let groupStart = 0;
+    for(let k = 1; k <= orderBySeries.length; k++) {
+      const isEnd = k === orderBySeries.length;
+      const closeToPrev = !isEnd &&
+        Math.abs(rawY[orderBySeries[k]][i] - rawY[orderBySeries[k - 1]][i]) <= TIE_THRESHOLD;
+      if(!closeToPrev) {
+        const groupSize = k - groupStart;
+        if(groupSize > 1) {
+          for(let g = 0; g < groupSize; g++) {
+            const si = orderBySeries[groupStart + g];
+            jitterY[si][i] += (g - (groupSize - 1) / 2) * JITTER_STEP;
+          }
+        }
+        groupStart = k;
+      }
+    }
+  }
+
+  seriesData.forEach((s, si) => {
+    const pts = s.values.map((v, i) => `${xFor(i).toFixed(1)},${jitterY[si][i].toFixed(1)}`).join(' ');
+    svg += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.95" filter="url(#lineGlow)"/>`;
+    s.values.forEach((v, i) => {
+      svg += `<circle cx="${xFor(i).toFixed(1)}" cy="${jitterY[si][i].toFixed(1)}" r="3.2" fill="${s.color}" stroke="#0d1117" stroke-width="1"/>`;
+    });
+  });
+
+  // End labels with basic collision avoidance (start from the de-overlapped line-end position)
+  let labelPositions = seriesData.map((s, si) => {
+    const lastVal = s.values[s.values.length - 1];
+    return { party: s.party, color: s.color, value: lastVal, y: jitterY[si][n - 1] };
+  }).sort((a, b) => a.y - b.y);
+
+  const minGap = 15;
+  for(let i = 1; i < labelPositions.length; i++) {
+    if(labelPositions[i].y - labelPositions[i - 1].y < minGap) {
+      labelPositions[i].y = labelPositions[i - 1].y + minGap;
+    }
+  }
+
+  const endX = xFor(n - 1);
+  labelPositions.forEach(lp => {
+    svg += `<circle cx="${(endX + 8).toFixed(1)}" cy="${lp.y.toFixed(1)}" r="4.2" fill="${lp.color}" stroke="#0d1117" stroke-width="1.5"/>`;
+    svg += `<text x="${(endX + 16).toFixed(1)}" y="${(lp.y + 4).toFixed(1)}" font-size="12" font-weight="700" fill="${lp.color}">${lp.party} ${lp.value.toFixed(1)}</text>`;
+  });
+
+  svg += `</svg>`;
+  container.innerHTML = svg;
+}
+
+function openDiagramModal(name, currentDate, currentResults, historyArr) {
+  const points = buildTimeline(currentDate, currentResults, historyArr);
+  document.getElementById("diagramModalTitle").textContent = "Umfragetrend – " + name;
+  const wrap = document.getElementById("diagramChartWrap");
+  renderTrendChart(wrap, points);
+  document.getElementById("diagramModal").classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDiagramModal() {
+  document.getElementById("diagramModal").classList.remove('active');
+  document.body.style.overflow = '';
+}
 
 function parseDate(dateStr) {
   // Parse DD.MM.YYYY format
@@ -1470,6 +1727,13 @@ function showState(state){
   seatsBtn.textContent = "Sitzverteilung/Koalitionen";
   seatsBtn.onclick = () => openSeatsModal(state, currentResults);
   bars.appendChild(seatsBtn);
+
+  // Add diagram button
+  const diagramBtn = document.createElement("button");
+  diagramBtn.className = "diagram-btn";
+  diagramBtn.textContent = "📈 Diagramm";
+  diagramBtn.onclick = () => openDiagramModal(state, data[state].date, currentResults, data[state].history);
+  bars.appendChild(diagramBtn);
   
   // Display historical data
   const historyDiv = document.getElementById("history");
@@ -1481,7 +1745,7 @@ function showState(state){
 
 
 
-  data[state].history.forEach(h => {
+  data[state].history.slice(0, 3).forEach(h => {
     const row = document.createElement("div");
     row.className = "history-row";
     
@@ -1558,6 +1822,13 @@ function showBundestag() {
   seatsBtn.textContent = "Sitzverteilung/Koalitionen";
   seatsBtn.onclick = () => openSeatsModal('Bundestag', bundestagData.results);
   badgeContainer.appendChild(seatsBtn);
+
+  // Add diagram button
+  const bundestagDiagramBtn = document.createElement("button");
+  bundestagDiagramBtn.className = "diagram-btn";
+  bundestagDiagramBtn.textContent = "📈 Diagramm";
+  bundestagDiagramBtn.onclick = () => openDiagramModal('Bundestag', bundestagData.date, bundestagData.results, bundestagData.history);
+  badgeContainer.appendChild(bundestagDiagramBtn);
   
   // Calculate trends from most recent history
   const currentResults = bundestagData.results;
@@ -2171,6 +2442,16 @@ function openStateModal(state) {
     openSeatsModal(state, currentResults);
   };
   bars.appendChild(seatsBtn);
+
+  // Add diagram button
+  const diagramBtn = document.createElement("button");
+  diagramBtn.className = "diagram-btn";
+  diagramBtn.textContent = "📈 Diagramm";
+  diagramBtn.onclick = () => {
+    closeStateModal();
+    openDiagramModal(state, data[state].date, currentResults, data[state].history);
+  };
+  bars.appendChild(diagramBtn);
   
   // Display historical data
   const historyDiv = document.getElementById("stateModalHistory");
@@ -2182,7 +2463,7 @@ function openStateModal(state) {
 
 
 
-  data[state].history.forEach(h => {
+  data[state].history.slice(0, 3).forEach(h => {
     const row = document.createElement("div");
     row.className = "history-row";
     
@@ -2349,7 +2630,7 @@ function showCityStats(city) {
   });
   const histDiv = document.getElementById('cityStatsHistory');
   histDiv.innerHTML = '';
-  cd.history.forEach(h => {
+  cd.history.slice(0, 3).forEach(h => {
     const row = document.createElement('div');
     row.className = 'history-row';
     const dateDiv = document.createElement('div');
