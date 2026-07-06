@@ -437,6 +437,9 @@ h1 {
   border-radius:12px;
   padding:1rem 0.6rem 0.6rem;
   border:1px solid var(--border);
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
 }
 .diagram-note {
   color:var(--text-muted);
@@ -1343,17 +1346,24 @@ function renderTrendChart(container, points) {
   if(maxV <= minV) maxV = minV + 5;
 
   const isNarrow = window.innerWidth <= 600;
+  const n0 = points.length;
   const W = isNarrow ? 560 : 780;
-  const H = isNarrow ? 420 : 440;
-  const marginTop = 50, marginBottom = 14, marginLeft = 30, marginRight = isNarrow ? 118 : 128;
+  const H = isNarrow ? 434 : 454;
+  const marginTop = 64, marginBottom = 14, marginLeft = 30, marginRight = isNarrow ? 118 : 128;
   const chartW = W - marginLeft - marginRight;
   const chartH = H - marginTop - marginBottom;
+
+  // As poll count grows, shrink dots/line thickness a bit so a dense timeline
+  // (e.g. 100 old polls) still fits on screen without ever needing to scroll.
+  const density = Math.max(0, n0 - 15);
+  const dotR = Math.max(1.3, 3.2 - density * 0.03);
+  const lineW = Math.max(1.1, 2.5 - density * 0.02);
 
   const n = points.length;
   const xFor = i => marginLeft + (n === 1 ? chartW / 2 : (i / (n - 1)) * chartW);
   const yFor = v => marginTop + chartH - ((v - minV) / (maxV - minV)) * chartH;
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;font-family:'JetBrains Mono',monospace;">`;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;overflow:visible;font-family:'JetBrains Mono',monospace;">`;
 
   // Gridlines + y labels
   const steps = 5;
@@ -1416,9 +1426,9 @@ function renderTrendChart(container, points) {
 
   seriesData.forEach((s, si) => {
     const pts = s.values.map((v, i) => `${xFor(i).toFixed(1)},${jitterY[si][i].toFixed(1)}`).join(' ');
-    svg += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.95" filter="url(#lineGlow)"/>`;
+    svg += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${lineW}" stroke-linejoin="round" stroke-linecap="round" opacity="0.95" filter="url(#lineGlow)"/>`;
     s.values.forEach((v, i) => {
-      svg += `<circle cx="${xFor(i).toFixed(1)}" cy="${jitterY[si][i].toFixed(1)}" r="3.2" fill="${s.color}" stroke="#0d1117" stroke-width="1"/>`;
+      svg += `<circle cx="${xFor(i).toFixed(1)}" cy="${jitterY[si][i].toFixed(1)}" r="${dotR}" fill="${s.color}" stroke="#0d1117" stroke-width="1"/>`;
     });
   });
 
