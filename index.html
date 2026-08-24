@@ -5,31 +5,43 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Deutschland Umfragen – Dark Mode</title>
+<title>Deutschland Umfragen — Live-Ticker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/*
+  Design notes — "Wahlticker" (election-night scoreboard) direction.
+  A full structural rewrite: tab navigation replaces the split desktop-panel
+  / mobile-modal duality, a single universal bottom-sheet drawer replaces
+  both, states render as a dense scoreboard list instead of an icon grid,
+  and a live marquee ticker becomes the page's signature element. Amber is
+  used as the one neutral UI accent so it never gets confused with any
+  party's own colour. All poll data, party colours/logos, and the
+  Sainte-Laguë seat math are untouched.
+*/
 :root {
-  --bg: #090b10;
-  --bg2: #0d1017;
-  --surface: rgba(255,255,255,0.04);
-  --surface-hover: rgba(255,255,255,0.07);
-  --border: rgba(255,255,255,0.08);
-  --border-bright: rgba(255,255,255,0.15);
-  --text: #e8eaf0;
-  --text-muted: #5a6070;
-  --text-dim: #8892a0;
-  --accent: #4d9fff;
-  --accent-glow: rgba(77,159,255,0.15);
-  --green: #3ecf8e;
-  --red: #f05c5c;
-  --font-head: 'Syne', sans-serif;
+  --bg: #060607;
+  --panel: #0d0e0f;
+  --surface: rgba(255,255,255,0.045);
+  --surface-hover: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.10);
+  --border-bright: rgba(255,255,255,0.24);
+  --text: #f4f3ef;
+  --text-muted: #6c6c6c;
+  --text-dim: #9a9a96;
+  --accent: #ffb100;
+  --accent-ink: #1a1200;
+  --green: #34c37c;
+  --red: #ff5252;
+  --font-display: 'Archivo Black', 'Archivo', sans-serif;
+  --font-head: 'Archivo', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
 * { box-sizing: border-box; }
+html { scrollbar-color: var(--border-bright) transparent; }
 
-body { 
+body {
   margin:0;
   font-family: var(--font-head);
   background: var(--bg);
@@ -38,836 +50,724 @@ body {
   overflow-x:hidden;
 }
 
-/* Subtle grid background */
-body::after {
-  content:"";
-  position:fixed;
-  inset:0;
-  background-image: 
-    linear-gradient(rgba(77,159,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(77,159,255,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events:none;
-  z-index:0;
-}
-
-
-
-/* Header */
-h1 { 
+/* ===== Masthead ===== */
+.masthead {
+  padding: 1.6rem 1rem 0;
   text-align:center;
-  padding:2.5rem 1rem 0.4rem;
-  margin:0;
-  font-size: clamp(22px, 4vw, 38px);
-  font-weight:800;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #fff 40%, var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  z-index:1;
-}
-
-.newest-poll-date { 
-  text-align:center;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size:12px;
-  margin-bottom:2rem;
-  letter-spacing:0.05em;
-  position: relative;
-  z-index:1;
-}
-.newest-poll-date::before {
-  content: "● ";
-  color: var(--green);
-  animation: blink 2s infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-/* Badges */
-.new-badge { 
-  display:inline-block;
-  background: linear-gradient(135deg, var(--green), #2ab875);
-  color:#000;
-  padding:3px 9px;
-  border-radius:20px;
-  font-size:10px;
-  font-weight:700;
-  font-family: var(--font-mono);
-  letter-spacing:0.05em;
-  text-transform:uppercase;
-  margin-top:8px;
-}
-
-/* Bundestag section */
-.bundestag-section { 
-  max-width:1400px;
-  margin:0 auto 1.5rem;
-  padding:0 1.5rem;
   position:relative;
-  z-index:1;
+  z-index:2;
+}
+h1 {
+  margin:0;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 5vw, 40px);
+  font-weight:400;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--text);
+  line-height:1;
+}
+h1 span { color: var(--accent); }
+
+/* ===== Ticker marquee — the signature element ===== */
+.ticker-wrap {
+  margin-top: 1.2rem;
+  border-top: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  background: var(--panel);
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+  z-index:2;
+}
+.ticker-wrap::before {
+  content: "LIVE";
+  position:absolute;
+  top:0; left:0; bottom:0;
+  display:flex; align-items:center;
+  padding: 0 0.9rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight:800;
+  letter-spacing: 0.1em;
+  z-index:3;
+}
+.ticker-track {
+  display:inline-block;
+  padding-left: 100%;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight:600;
+  letter-spacing: 0.03em;
+  color: var(--text-dim);
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  animation: ticker-scroll 32s linear infinite;
+}
+.ticker-track b { color: var(--text); font-weight:700; }
+.ticker-track .tk-sep { color: var(--accent); margin: 0 1.4em; }
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+}
+/* Pause the marquee while a modal/drawer is open on top of it — no reason
+   to keep repainting a scrolling ticker the user can't see or interact
+   with, and it avoids extra compositor work while the sheet animates in. */
+body.modal-open .ticker-track { animation-play-state: paused; }
+
+/* newest-poll-date kept as an id target but folded into the ticker visually */
+.newest-poll-date { display:none; }
+
+/* ===== Tab navigation ===== */
+.tabs {
+  display:flex;
+  max-width: 1100px;
+  margin: 1.4rem auto 0;
+  padding: 0 1rem;
+  gap: 0.4rem;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--bg);
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+.tab-btn {
+  flex:1;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight:700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.7rem 0.6rem;
+  cursor:pointer;
+  transition: all 0.18s ease;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.tab-btn:hover { border-color: var(--border-bright); color: var(--text); }
+.tab-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tab-badge {
+  background: var(--red);
+  color:#fff;
+  font-size:8.5px;
+  font-weight:800;
+  padding: 1px 5px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+.tab-btn.active .tab-badge { background: var(--accent-ink); color: var(--accent); }
+
+/* ===== Views ===== */
+.view { display:none; max-width: 1100px; margin: 0 auto; padding: 1.4rem 1rem 3rem; position:relative; z-index:1; }
+.view.active { display:block; animation: viewIn 0.25s ease; }
+@keyframes viewIn { from { opacity:0; transform: translateY(6px);} to { opacity:1; transform:none; } }
+
+.view-heading {
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap:wrap;
+}
+.view-heading h2 {
+  font-family: var(--font-display);
+  font-weight:400;
+  font-size: 20px;
+  text-transform:uppercase;
+  letter-spacing:0.01em;
+  margin:0;
+}
+.view-heading .sub { font-family: var(--font-mono); font-size:11px; color: var(--text-muted); letter-spacing:0.04em; }
+
+/* ===== Footer / Quellen ===== */
+.site-footer {
+  max-width: 1100px;
+  margin: 0.5rem auto 2rem;
+  padding: 1.1rem 1.4rem 0;
+  border-top: 1px solid var(--border);
+  position:relative; z-index:1;
+}
+.footer-sources {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap: 0.4rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+.footer-sources-label {
+  color: var(--accent);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 9.5px;
+}
+.footer-sources-list { color: var(--text-muted); }
+@media (max-width: 600px) {
+  .site-footer { padding: 1rem 0.9rem 0; margin-bottom: 2rem; }
 }
 
-.bundestag-container { 
+/* Search box */
+.search-box {
+  width:100%;
   background: var(--surface);
-  border-radius:16px;
-  padding:1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  outline:none;
+  transition: border-color 0.2s;
+}
+.search-box::placeholder { color: var(--text-muted); }
+.search-box:focus { border-color: var(--accent); }
+
+/* ===== Bundestag card ===== */
+.bundestag-section { position:relative; z-index:1; }
+.bundestag-container {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.6rem;
   position:relative;
   overflow:hidden;
-  border:1px solid var(--border);
-  backdrop-filter: blur(12px);
-  transition: border-color 0.4s ease;
 }
-.bundestag-container:hover {
-  border-color: var(--border-bright);
-}
-.bundestag-container::before { 
+.bundestag-container::before {
   content:"";
   position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  width:300px;height:300px;
+  top:-40px; right:-40px;
+  width:220px;height:220px;
   background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Coat_of_arms_of_Germany.svg/960px-Coat_of_arms_of_Germany.svg.png');
   background-size:contain;
   background-repeat:no-repeat;
-  background-position:center;
-  opacity:0.04;
-  pointer-events:none;
-  z-index:0;
-}
-.bundestag-container h2 { 
-  margin:0 0 0.3rem 0;
-  font-size:15px;
-  font-weight:700;
-  letter-spacing:0.06em;
-  text-transform:uppercase;
-  color: var(--text-dim);
-  position:relative;
-  z-index:1;
-}
-.bundestag-container .date { 
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size:12px;
-  margin-bottom:1rem;
-  position:relative;
-  z-index:1;
-}
-.bundestag-container .badge-container { 
-  position:relative;
-  z-index:1;
-  margin-top:1.2rem;
-}
-
-/* Main layout */
-.main { 
-  display:flex;
-  max-width:1400px;
-  margin:auto;
-  gap:0;
-  position:relative;
-  z-index:1;
-}
-
-/* States grid */
-.states { 
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:0.8rem;
-  padding:1.5rem;
-  width:50%;
-}
-.state { 
-  background: var(--surface);
-  border-radius:12px;
-  padding:0.9rem 0.6rem;
-  text-align:center;
-  cursor:pointer;
-  transition:all 0.25s ease;
-  border:1px solid var(--border);
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  min-height:130px;
-  backdrop-filter: blur(8px);
-  overflow:hidden;
-}
-.state::before {
-  content:"";
-  position:absolute;
-  inset:0;
-  background: linear-gradient(135deg, transparent 60%, rgba(77,159,255,0.05));
-  opacity:0;
-  transition: opacity 0.25s;
-}
-.state:hover { 
-  background: var(--surface-hover);
-  transform:translateY(-3px);
-  border-color: var(--border-bright);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(77,159,255,0.1);
-}
-.state:hover::before { opacity:1; }
-.state.active { 
-  background: rgba(77,159,255,0.08);
-  border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(77,159,255,0.15);
-}
-.state-content { flex:1;display:flex;flex-direction:column;justify-content:center }
-.state img { width:56px;height:56px;object-fit:contain;margin:auto;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5)) }
-.state-name { margin-top:0.5rem;font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-dim) }
-.state .badge-container { margin-top:auto;padding-top:0.4rem }
-
-/* Right panel */
-.panel { 
-  width:50%;
-  padding:1.5rem;
-  background: transparent;
-  position:relative;
-  overflow:hidden;
-}
-.panel::before { 
-  content:"";
-  position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  width:350px;height:350px;
-  background-image:var(--bg-coat);
-  background-size:contain;
-  background-repeat:no-repeat;
-  background-position:center;
   opacity:0.05;
+  filter: grayscale(1);
   pointer-events:none;
-  transition:all 0.5s ease;
 }
-.panel h2 { 
-  margin:0 0 0.2rem;
-  font-size: clamp(18px, 2vw, 24px);
-  font-weight:800;
-  letter-spacing:-0.02em;
+.bundestag-container h2 {
+  margin:0 0 0.2rem 0;
+  font-family: var(--font-display);
+  font-weight:400;
+  font-size:18px;
+  text-transform:uppercase;
+  letter-spacing:0.01em;
+  position:relative; z-index:1;
 }
-.panel .date { 
+.bundestag-container .date {
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size:12px;
-  margin-bottom:1.5rem;
-  letter-spacing:0.04em;
+  font-size:11px;
+  letter-spacing:0.05em;
+  margin-bottom:1.2rem;
+  position:relative; z-index:1;
 }
+.bundestag-container .badge-container { position:relative; z-index:1; margin-top:1.2rem; display:flex; gap:0.6rem; flex-wrap:wrap; }
 
-/* Bar rows */
-.bar-row { 
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin:0.9rem 0;
-  position:relative;
-  z-index:1;
-}
-.party-logo { width:24px;height:24px;object-fit:contain;flex-shrink:0 }
-.bar { 
-  height:24px;
+/* ===== Bar rows (scoreboard bars) ===== */
+.bar-row { display:flex; align-items:center; gap:10px; margin:0.8rem 0; position:relative; z-index:1; }
+.party-logo { width:22px;height:22px;object-fit:contain;flex-shrink:0 }
+.bar {
+  height:26px;
   border-radius:4px;
   display:flex;
   align-items:center;
-  padding-left:8px;
-  font-size:11px;
-  font-weight:700;
+  padding-left:9px;
+  font-size:10.5px;
+  font-weight:800;
   font-family: var(--font-mono);
-  letter-spacing:0.03em;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
   transition:width 0.3s ease;
   width:0;
   animation:none;
   position:relative;
   overflow:visible;
 }
-.bar::after {
-  content:'';
-  position:absolute;
-  inset:0;
-  border-radius:4px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
-  pointer-events:none;
-}
-.bar.animate { animation:expandBar 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards }
-@keyframes expandBar {
-  from { width:0; opacity:0 }
-  to { opacity:1 }
-}
-.bar:hover { opacity:0.85; }
-.percent { 
-  width:90px;
-  text-align:right;
-  font-weight:700;
-  font-family: var(--font-mono);
-  font-size:13px;
-  flex-shrink:0;
-}
+.bar::after { content:''; position:absolute; inset:0; border-radius:4px; background: linear-gradient(180deg, rgba(255,255,255,0.14), transparent 60%); pointer-events:none; }
+.bar.animate { animation:expandBar 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards }
+@keyframes expandBar { from { width:0; opacity:0 } to { opacity:1 } }
+.bar:hover { filter: brightness(1.1); }
+.percent { width:86px; text-align:right; font-weight:800; font-family: var(--font-mono); font-size:14px; flex-shrink:0; }
 
-/* History */
-.history-section { 
-  margin-top:2rem;
-  padding-top:1.5rem;
-  border-top:1px solid var(--border);
+/* ===== History ===== */
+.history-section { margin-top:1.8rem; padding-top:1.3rem; border-top:1px dashed var(--border); }
+.history-section h3 { font-family: var(--font-mono); font-size:10.5px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color: var(--text-muted); margin-bottom:0.9rem; }
+.history-row { margin:0.8rem 0; padding:0.9rem; background: var(--surface); border-radius:8px; border:1px solid var(--border); }
+.history-date { font-size:10.5px; color: var(--text-muted); font-family: var(--font-mono); margin-bottom:0.6rem; letter-spacing:0.06em; display:flex; align-items:center; gap:6px; }
+.history-type-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:15px; height:15px; border-radius:4px;
+  font-size:9px; font-weight:800; font-family: var(--font-mono);
+  line-height:1; flex-shrink:0;
 }
-.history-section h3 { 
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:0.1em;
-  text-transform:uppercase;
-  color: var(--text-muted);
-  margin-bottom:1rem;
-}
-.history-row { 
-  margin:1rem 0;
-  padding:1rem;
+.history-type-badge.u { background: rgba(255,177,0,0.14); color: var(--accent); border:1px solid rgba(255,177,0,0.4); }
+.history-type-badge.e { background: rgba(79,127,168,0.2); color: #8fb4d8; border:1px solid rgba(79,127,168,0.55); }
+
+.history-legend {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.5rem 1rem;
+  margin-bottom:0.9rem;
+  padding:0.6rem 0.8rem;
   background: var(--surface);
-  border-radius:10px;
   border:1px solid var(--border);
+  border-radius:8px;
 }
-.history-date { 
-  font-size:11px;
-  color: var(--text-muted);
+.history-legend-item {
+  display:flex;
+  align-items:center;
+  gap:6px;
   font-family: var(--font-mono);
-  margin-bottom:0.7rem;
-  letter-spacing:0.04em;
+  font-size:10.5px;
+  color: var(--text-dim);
+  letter-spacing:0.02em;
 }
-.history-parties { display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:0.6rem }
+.history-parties { display:grid;grid-template-columns:repeat(auto-fit,minmax(66px,1fr));gap:0.5rem }
 .history-party { text-align:center }
-.history-party-name { font-size:10px;color:var(--text-muted);margin-bottom:0.2rem;font-family:var(--font-mono);letter-spacing:0.04em }
-.history-party-value { font-size:13px;font-weight:700;font-family:var(--font-mono) }
+.history-party-name { font-size:9px;color:var(--text-muted);margin-bottom:0.15rem;font-family:var(--font-mono);letter-spacing:0.05em }
+.history-party-value { font-size:12px;font-weight:700;font-family:var(--font-mono) }
 
 /* Trends */
-.trend { display:inline-block;margin-left:5px;font-size:10px;font-weight:700;font-family:var(--font-mono) }
+.trend { display:inline-block;margin-left:5px;font-size:10px;font-weight:800;font-family:var(--font-mono) }
 .trend.up { color: var(--green) }
 .trend.down { color: var(--red) }
 .trend.same { color: var(--text-muted) }
 
-/* Elections scroll */
-#elections-2026 { max-height:360px;overflow-y:auto;padding-right:6px }
-#elections-2026::-webkit-scrollbar { width:4px }
-#elections-2026::-webkit-scrollbar-track { background:transparent }
-#elections-2026::-webkit-scrollbar-thumb { background:var(--border-bright);border-radius:2px }
-#elections-2026::-webkit-scrollbar-thumb:hover { background:var(--accent) }
-
-.election-item { 
-  display:flex;align-items:center;gap:10px;
-  margin:0.7rem 0;
-  padding:0.8rem;
-  background:var(--surface);
+/* ===== Elections list (Wahlen tab) ===== */
+#elections-2026 { display:flex; flex-direction:column; gap:0.6rem; }
+.election-item {
+  display:flex;align-items:center;gap:12px;
+  padding:0.9rem 1rem;
+  background:var(--panel);
   border-radius:10px;
   border:1px solid var(--border);
+  border-left: 3px solid var(--accent);
   position:relative;z-index:1;
   flex-wrap:wrap;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
-.election-item:hover { border-color:var(--border-bright); }
-.election-coat { width:36px;height:36px;object-fit:contain;flex-shrink:0 }
+.election-item:hover { background: var(--surface-hover); }
+.election-coat { width:32px;height:32px;object-fit:contain;flex-shrink:0 }
 .election-info { flex:1;min-width:0 }
-.election-state { font-weight:700;font-size:13px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.01em }
-.election-type { font-size:10px;color:var(--text-muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.06em }
-.election-date { font-size:11px;color:var(--accent);font-family:var(--font-mono);white-space:normal;flex-shrink:0;width:100%;margin-top:3px }
+.election-state { font-weight:700;font-size:14px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;font-family: var(--font-head); }
+.election-type { font-size:9.5px;color:var(--text-muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.07em }
+.election-date { font-size:12px;color:var(--accent);font-family:var(--font-mono);font-weight:700;white-space:normal;flex-shrink:0; text-align:right; }
+.election-countdown { font-size:10px; color:var(--text-muted); font-weight:600; letter-spacing:0.03em; margin-top:2px; text-transform:uppercase; }
 
-/* Seats button */
-.seats-btn { 
-  background: linear-gradient(135deg, rgba(77,159,255,0.15), rgba(77,159,255,0.08));
+/* ===== Seats / diagram buttons ===== */
+.seats-btn, .diagram-btn {
+  background: transparent;
+  border:1.5px solid var(--accent);
   color: var(--accent);
-  border:1px solid rgba(77,159,255,0.3);
-  padding:7px 16px;
-  border-radius:8px;
-  font-size:11px;
-  font-weight:700;
+  padding:8px 16px;
+  border-radius:999px;
+  font-size:10.5px;
+  font-weight:800;
   font-family: var(--font-mono);
-  letter-spacing:0.04em;
+  letter-spacing:0.05em;
   text-transform:uppercase;
   cursor:pointer;
-  margin-top:1rem;
-  transition:all 0.25s ease;
-  position:relative;z-index:1;
+  transition:all 0.18s ease;
 }
-.seats-btn:hover { 
-  background: rgba(77,159,255,0.2);
-  border-color: var(--accent);
-  box-shadow: 0 0 16px rgba(77,159,255,0.2);
-  transform:translateY(-1px);
-}
+.diagram-btn { border-color: var(--green); color: var(--green); margin-left:0; }
+.seats-btn:hover { background: var(--accent); color: var(--accent-ink); }
+.diagram-btn:hover { background: var(--green); color:#04140b; }
 
-/* Diagram button */
-.diagram-btn { 
-  background: linear-gradient(135deg, rgba(62,207,142,0.15), rgba(62,207,142,0.08));
-  color: var(--green);
-  border:1px solid rgba(62,207,142,0.3);
-  padding:7px 16px;
-  border-radius:8px;
-  font-size:11px;
-  font-weight:700;
-  font-family: var(--font-mono);
-  letter-spacing:0.04em;
-  text-transform:uppercase;
-  cursor:pointer;
-  margin-top:0.6rem;
-  margin-left:0.6rem;
-  transition:all 0.25s ease;
-  position:relative;z-index:1;
-}
-.diagram-btn:hover { 
-  background: rgba(62,207,142,0.2);
-  border-color: var(--green);
-  box-shadow: 0 0 16px rgba(62,207,142,0.2);
-  transform:translateY(-1px);
-}
-
-/* Diagram modal */
+/* ===== Modals (seats + diagram) ===== */
 #diagramModal { z-index: 2500; }
-.diagram-modal-content {
-  background:#0d1117;
-  border-radius:16px;
-  width:92%;max-width:900px;max-height:90vh;
-  overflow:hidden;position:relative;
-  border:1px solid var(--border-bright);
-  box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(62,207,142,0.1);
-}
-.diagram-body {
-  padding:1.2rem 1.5rem 1.5rem;
-  max-height:calc(90vh - 70px);
-  overflow-y:auto;
-}
-.diagram-chart-wrap {
-  background:var(--surface);
-  border-radius:12px;
-  padding:1rem 0.6rem 0.6rem;
-  border:1px solid var(--border);
-  overflow-x:auto;
-  overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-}
-.diagram-note {
-  color:var(--text-muted);
-  font-family:var(--font-mono);
-  font-size:11px;
-  letter-spacing:0.03em;
-  margin-top:0.8rem;
-  text-align:center;
-}
-
-/* Modals */
-.modal-overlay { 
+.modal-overlay, .diagram-modal-content, .modal-content {}
+.modal-overlay {
   display:none;
   position:fixed;inset:0;
-  background:rgba(0,0,0,0.88);
-  backdrop-filter:blur(4px);
+  background:rgba(0,0,0,0.86);
   z-index:1000;
   align-items:center;justify-content:center;
+  padding: 1rem;
 }
 .modal-overlay.active { display:flex }
-.modal-content { 
-  background: #0d1117;
+.modal-content, .diagram-modal-content {
+  background: var(--panel);
   border-radius:16px;
-  width:90%;max-width:1200px;max-height:90vh;
+  width:90%;max-width:1100px;max-height:90vh;
   overflow:hidden;position:relative;
   border:1px solid var(--border-bright);
-  box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(77,159,255,0.1);
+  box-shadow: 0 40px 90px rgba(0,0,0,0.8);
 }
-.modal-header { 
+.diagram-modal-content { max-width:880px; }
+.modal-header {
   display:flex;justify-content:space-between;align-items:center;
-  padding:1.2rem 1.5rem;
+  padding:1.1rem 1.4rem;
   border-bottom:1px solid var(--border);
   background: rgba(255,255,255,0.02);
 }
-.modal-header h2 { 
-  margin:0;font-size:16px;font-weight:800;
-  letter-spacing:0.04em;text-transform:uppercase;
-  color:var(--text-dim);
-}
-.close-btn { 
-  background: rgba(240,92,92,0.15);
-  color: var(--red);
-  border:1px solid rgba(240,92,92,0.3);
-  padding:6px 14px;
-  border-radius:7px;
-  font-size:12px;font-weight:700;
+.modal-header h2 { margin:0;font-family: var(--font-display); font-size:15px;font-weight:400; letter-spacing:0.01em;text-transform:uppercase; color:var(--text); }
+.close-btn {
+  background: var(--red);
+  color: #fff;
+  border:none;
+  padding:7px 15px;
+  border-radius:999px;
+  font-size:11px;font-weight:800;
   font-family: var(--font-mono);
   letter-spacing:0.04em;
+  text-transform:uppercase;
   cursor:pointer;
-  transition:all 0.2s ease;
+  transition:all 0.18s ease;
 }
-.close-btn:hover { background:rgba(240,92,92,0.25); border-color:var(--red); }
-.modal-body { 
-  display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;
-  padding:1.5rem;
-  max-height:calc(90vh - 70px);
-  overflow-y:auto;
-}
-.modal-section { 
-  background:var(--surface);
-  border-radius:12px;padding:1.2rem;
-  border:1px solid var(--border);
-}
-.modal-section h3 { 
-  margin:0 0 1rem 0;
-  font-size:11px;font-weight:700;
-  letter-spacing:0.1em;text-transform:uppercase;
-  color:var(--accent);
-}
+.close-btn:hover { filter:brightness(1.15); }
+.modal-body { display:grid;grid-template-columns:1fr 1fr;gap:1.2rem; padding:1.3rem; max-height:calc(90vh - 66px); overflow-y:auto; }
+.modal-section { background:var(--surface); border-radius:12px;padding:1.1rem; border:1px solid var(--border); }
+.modal-section h3 { margin:0 0 1rem 0; font-family: var(--font-mono); font-size:10.5px;font-weight:700; letter-spacing:0.12em;text-transform:uppercase; color:var(--accent); }
 .seats-grid { display:flex;flex-wrap:wrap;gap:4px;margin-top:1rem;justify-content:center;align-items:flex-end;position:relative;min-height:300px }
 .seat-dot { border-radius:50%;display:inline-block;position:absolute;transition:opacity 0.4s ease }
 .parliament-container { width:100%;height:300px;position:relative }
-.party-seat-info { 
-  display:flex;align-items:center;gap:8px;
-  margin:0.6rem 0;padding:0.5rem 0.7rem;
-  background:rgba(255,255,255,0.03);
-  border-radius:8px;border:1px solid var(--border);
-}
+.party-seat-info { display:flex;align-items:center;gap:8px; margin:0.55rem 0;padding:0.5rem 0.7rem; background:rgba(255,255,255,0.03); border-radius:8px;border:1px solid var(--border); }
 .party-seat-logo { width:22px;height:22px;object-fit:contain }
-.party-seat-name { flex:1;font-size:13px;font-weight:700 }
-.party-seat-count { font-size:13px;font-weight:700;font-family:var(--font-mono);color:var(--accent) }
+.party-seat-name { flex:1;font-size:13px;font-weight:600 }
+.party-seat-count { font-size:13px;font-weight:800;font-family:var(--font-mono);color:var(--accent) }
 
-.coalition-party { 
-  display:flex;align-items:center;gap:8px;
-  padding:0.7rem;
-  background:rgba(255,255,255,0.03);
-  border-radius:8px;margin:0.4rem 0;
-  cursor:pointer;
-  transition:all 0.2s ease;
-  border:1px solid var(--border);
-}
+.coalition-party { display:flex;align-items:center;gap:8px; padding:0.65rem; background:rgba(255,255,255,0.03); border-radius:8px;margin:0.4rem 0; cursor:pointer; transition:all 0.18s ease; border:1px solid var(--border); }
 .coalition-party:hover { background:var(--surface-hover); border-color:var(--border-bright); }
-.coalition-party.selected { border-color:var(--green);background:rgba(62,207,142,0.08);box-shadow:0 0 12px rgba(62,207,142,0.1); }
-.coalition-result { 
-  margin-top:1rem;padding:0.8rem;border-radius:8px;
-  text-align:center;font-size:14px;font-weight:700;
-  font-family:var(--font-mono);letter-spacing:0.04em;
-}
-.coalition-result.majority { background:rgba(62,207,142,0.15);color:var(--green);border:1px solid rgba(62,207,142,0.3) }
-.coalition-result.no-majority { background:rgba(240,92,92,0.15);color:var(--red);border:1px solid rgba(240,92,92,0.3) }
-.coalition-stats { 
-  display:flex;justify-content:space-around;
-  margin-top:1rem;padding:0.8rem;
-  background:rgba(255,255,255,0.03);border-radius:8px;
-  border:1px solid var(--border);
-}
-.coalition-stat { text-align:center }
-.coalition-stat-value { font-size:22px;font-weight:800;font-family:var(--font-mono);color:var(--accent) }
-.coalition-stat-label { font-size:10px;color:var(--text-muted);margin-top:0.2rem;letter-spacing:0.06em;text-transform:uppercase }
-
-/* State Data Modal for Mobile */
-.state-modal-overlay { 
-  display:none;position:fixed;inset:0;
-  background:var(--bg);z-index:2000;overflow-y:auto;
-}
-.state-modal-overlay.active { display:block }
-.state-modal-overlay::before { 
-  content:"";position:fixed;
-  top:50%;left:50%;transform:translate(-50%,-50%);
-  width:400px;height:400px;
-  background-image:var(--bg-coat);
-  background-size:contain;background-repeat:no-repeat;background-position:center;
-  opacity:0.05;pointer-events:none;z-index:0;
-}
-.state-modal-header { 
-  display:flex;justify-content:space-between;align-items:center;
-  padding:1rem 1.2rem;
-  border-bottom:1px solid var(--border);
-  position:sticky;top:0;
-  background:rgba(9,11,16,0.95);
-  backdrop-filter:blur(12px);
-  z-index:10;
-}
-.state-modal-header h2 { 
-  margin:0;font-size:16px;font-weight:800;
-  letter-spacing:-0.01em;
-  position:relative;z-index:1;
-}
-.state-modal-header .close-btn { align-self:center;position:relative;z-index:1 }
-.state-modal-body { padding:1.2rem;position:relative;z-index:1 }
-.state-modal-body .date { color:var(--text-muted);font-family:var(--font-mono);font-size:12px;margin-bottom:1.2rem;letter-spacing:0.04em }
-
-/* Mobile Optimizations */
-@media screen and (max-width: 1024px) {
-  .bundestag-section { padding:0 0.8rem }
-  .bundestag-container { grid-template-columns:1fr !important }
-  .main { flex-direction:column;gap:0 }
-  .states { width:100%;padding:0.8rem;grid-template-columns:repeat(3,1fr);gap:0.7rem }
-  .panel { width:100%;padding:1.2rem }
-  .modal-body { grid-template-columns:1fr;gap:1rem;padding:1rem }
-  .modal-content { width:95%;max-width:none }
-}
-
-@media screen and (max-width: 768px) {
-  h1 { font-size:24px;padding:1.2rem 0.8rem 0.3rem }
-  .bundestag-section { padding:0 0.5rem }
-  .bundestag-container { padding:1rem }
-  .bundestag-container h2 { font-size:12px }
-  .states { grid-template-columns:repeat(2,1fr);gap:0.6rem;padding:0.6rem }
-  .state { min-height:110px;padding:0.7rem }
-  .state img { width:44px;height:44px }
-  .state-name { font-size:10px }
-  .panel { padding:1rem }
-  .panel h2 { font-size:18px }
-  .bar-row { gap:6px;margin:1rem 0 }
-  .party-logo { width:20px;height:20px }
-  .bar { height:20px;font-size:10px;padding-left:6px }
-  .percent { width:70px;font-size:11px }
-  .modal-header { padding:0.8rem 1rem }
-  .modal-header h2 { font-size:13px }
-  .modal-body { padding:0.8rem }
-  .modal-section { padding:0.8rem }
-  .seats-grid { min-height:180px }
-  .coalition-stat-value { font-size:18px }
-  .election-item { gap:8px;padding:0.6rem }
-  .election-coat { width:30px;height:30px }
-  .election-state { font-size:12px }
-  .election-type { font-size:10px }
-  .election-date { font-size:11px }
-}
-
-@media screen and (max-width: 480px) {
-  h1 { font-size:18px;padding:1rem 0.5rem 0.2rem }
-  .bundestag-section { margin-bottom:0.8rem }
-  .states { grid-template-columns:repeat(2,1fr);gap:0.5rem;padding:0.5rem }
-  .state { min-height:100px;padding:0.6rem }
-  .state img { width:38px;height:38px }
-  .state-name { font-size:9px }
-  .panel { padding:0.7rem }
-  .panel h2 { font-size:15px }
-  .bar-row { margin:0.8rem 0 }
-  .bar { height:18px;font-size:9px }
-  .party-logo { width:18px;height:18px }
-  .percent { width:58px;font-size:10px }
-  .history-parties { grid-template-columns:repeat(auto-fit,minmax(55px,1fr)) }
-  .modal-header { padding:0.7rem }
-  .modal-header h2 { font-size:12px }
-  .close-btn { padding:5px 10px;font-size:11px }
-  .seats-btn { padding:5px 10px;font-size:10px }
-  .coalition-party { padding:0.5rem;gap:6px }
-  .party-seat-logo { width:18px;height:18px }
-  .party-seat-name { font-size:11px }
-  .party-seat-count { font-size:11px }
-  .coalition-stat-value { font-size:16px }
-  .coalition-stat-label { font-size:10px }
-  .election-item { gap:6px;padding:0.5rem }
-  .election-coat { width:26px;height:26px }
-  .election-state { font-size:11px }
-  .election-type { font-size:9px }
-  .election-date { font-size:10px }
-}
-
-/* Hide desktop panel on mobile */
-@media screen and (max-width: 1024px) {
-  .panel { display: none !important; }
-}
-
-/* Weitere Umfragen Button */
-.weitere-btn-container {
-  display: flex;
-  justify-content: center;
-  padding: 0.5rem 2rem 2rem;
-  position: relative;
-  z-index: 1;
-}
-@media screen and (max-width: 1024px) {
-  .weitere-btn-container {
-    position: fixed;
-    bottom: 0; left: 0;
-    width: 100%;
-    padding: 0.8rem 1rem;
-    background: linear-gradient(to top, var(--bg) 60%, transparent);
-    z-index: 500;
-    box-sizing: border-box;
-  }
-  body { padding-bottom: 70px; }
-}
-
-.weitere-btn {
-  background: linear-gradient(135deg, rgba(77,159,255,0.15), rgba(77,159,255,0.08));
-  color: var(--accent);
-  border: 1px solid rgba(77,159,255,0.35);
-  padding: 11px 28px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
+.coalition-party.selected { border-color:var(--green);background:rgba(52,195,124,0.12); }
+.gov-badge {
   font-family: var(--font-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 20px rgba(77,159,255,0.1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-}
-.weitere-btn:hover { 
-  background: rgba(77,159,255,0.2);
-  border-color: var(--accent);
-  box-shadow: 0 0 24px rgba(77,159,255,0.25);
-  transform: translateY(-2px);
-}
-.weitere-btn:active { transform: scale(0.97) }
-@media screen and (max-width: 1024px) {
-  .weitere-btn { width: 100%; justify-content: center; padding: 13px 20px; }
-}
-.weitere-btn .neue-badge {
-  background: var(--green);
-  color: #000;
   font-size: 9px;
-  font-weight: 700;
-  font-family: var(--font-mono);
-  padding: 2px 7px;
-  border-radius: 20px;
+  font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  animation: pulse-badge 2s infinite;
+  color: var(--accent);
+  background: rgba(255,177,0,0.14);
+  border: 1px solid rgba(255,177,0,0.35);
+  border-radius: 20px;
+  padding: 2px 7px;
+  white-space: nowrap;
 }
-@keyframes pulse-badge {
-  0%, 100% { opacity: 1; transform: scale(1) }
-  50% { opacity: 0.7; transform: scale(1.1) }
-}
+.coalition-result { margin-top:1rem;padding:0.8rem;border-radius:10px; text-align:center;font-size:13.5px;font-weight:800; font-family:var(--font-mono);letter-spacing:0.04em; }
+.coalition-result.majority { background:rgba(52,195,124,0.16);color:var(--green);border:1px solid rgba(52,195,124,0.35) }
+.coalition-result.no-majority { background:rgba(255,82,82,0.14);color:var(--red);border:1px solid rgba(255,82,82,0.35) }
+.coalition-stats { display:flex;justify-content:space-around; margin-top:1rem;padding:0.8rem; background:rgba(255,255,255,0.03);border-radius:10px; border:1px solid var(--border); }
+.coalition-stat { text-align:center }
+.coalition-stat-value { font-size:21px;font-weight:800;font-family:var(--font-mono);color:var(--accent) }
+.coalition-stat-label { font-size:9.5px;color:var(--text-muted);margin-top:0.2rem;letter-spacing:0.06em;text-transform:uppercase; font-family:var(--font-mono); }
 
-/* Weitere Umfragen Overlay */
-.weitere-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.88);
-  backdrop-filter: blur(4px);
-  z-index: 3000;
-  align-items: center;
-  justify-content: center;
+.diagram-body { padding:1.1rem 1.4rem 1.4rem; max-height:calc(90vh - 66px); overflow-y:auto; }
+.diagram-chart-wrap { background:var(--surface); border-radius:10px; padding:1rem 0.6rem 0.6rem; border:1px solid var(--border); overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
+.diagram-note { color:var(--text-muted); font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.04em; margin-top:0.8rem; text-align:center; line-height:1.5; }
+
+/* ===== Diagram modal header (eyebrow + title + subtitle) ===== */
+.diagram-modal-header { align-items:flex-start; gap:1rem; }
+.diagram-heading { min-width:0; }
+.diagram-eyebrow {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--font-mono); font-size:9.5px; font-weight:800;
+  letter-spacing:0.12em; text-transform:uppercase;
+  color: var(--green); margin-bottom:4px;
 }
-.weitere-overlay.active { display: flex }
-.weitere-panel {
-  background: #0d1117;
-  border-radius: 16px;
-  width: 92%;
-  max-width: 700px;
-  max-height: 88vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-bright);
-  box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(77,159,255,0.08);
-}
-.weitere-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.4rem;
-  border-bottom: 1px solid var(--border);
-  background: rgba(255,255,255,0.02);
-  flex-shrink: 0;
-}
-.weitere-header h2 { 
-  margin: 0; 
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.diagram-modal-header h2 { text-transform:none; letter-spacing:0.005em; font-size:16px; }
+.diagram-subtitle { font-size:12px; color:var(--text-dim); margin-top:3px; line-height:1.4; }
+
+/* ===== Diagram time-range tabs ===== */
+.diagram-range-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:0.9rem; }
+.diagram-range-btn {
+  background: transparent;
+  border: 1.5px solid var(--border-bright);
   color: var(--text-dim);
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
-.weitere-body {
-  overflow-y: auto;
-  padding: 1.2rem;
-  flex: 1;
-}
-.weitere-body::-webkit-scrollbar { width: 4px }
-.weitere-body::-webkit-scrollbar-track { background: transparent }
-.weitere-body::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px }
-.weitere-body::-webkit-scrollbar-thumb:hover { background: var(--accent) }
+.diagram-range-btn:hover { border-color: var(--green); color: var(--text); }
+.diagram-range-btn.active { background: var(--green); border-color: var(--green); color: #04140b; }
 
-.city-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.8rem;
+/* ===== Diagram meta chips (poll count / range / leader) ===== */
+.diagram-meta { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.9rem; }
+.diagram-meta-chip {
+  display:flex; flex-direction:column; gap:1px;
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  padding:0.45rem 0.7rem; flex:1; min-width:110px;
 }
+.diagram-meta-chip .label { font-family:var(--font-mono); font-size:8.5px; letter-spacing:0.09em; text-transform:uppercase; color:var(--text-muted); }
+.diagram-meta-chip .value { font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--text); }
+.diagram-meta-chip.leader .value { color: var(--green); }
+
+/* ===== Diagram legend — current standing per party ===== */
+.diagram-legend { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.9rem; }
+.diagram-legend-item {
+  display:flex; align-items:center; gap:6px;
+  background:var(--surface); border:1px solid var(--border); border-radius:999px;
+  padding:5px 10px 5px 8px; font-family:var(--font-mono); font-size:11px;
+}
+.diagram-legend-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; border:1px solid rgba(255,255,255,0.25); }
+.diagram-legend-party { font-weight:700; color:var(--text); }
+.diagram-legend-value { color:var(--text-dim); }
+.diagram-legend-trend { font-weight:800; }
+.diagram-legend-trend.up { color: var(--green); }
+.diagram-legend-trend.down { color: var(--red); }
+.diagram-legend-trend.same { color: var(--text-muted); }
+
+/* ===== Länder view: scoreboard list ===== */
+.states {
+  display:flex;
+  flex-direction:column;
+  gap:0.55rem;
+}
+.state {
+  background: var(--panel);
+  border-radius:12px;
+  padding:0.8rem 1rem;
+  cursor:pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  border:1px solid var(--border);
+  border-left: 4px solid transparent;
+  display:flex;
+  align-items:center;
+  gap:0.9rem;
+}
+.state:hover { background: var(--surface-hover); transform: translateX(3px); }
+.state.active { border-color: var(--accent); background: rgba(255,177,0,0.06); }
+.state-content { flex:1; display:flex; align-items:center; gap:0.9rem; min-width:0; }
+.state img { width:34px;height:34px;object-fit:contain;flex-shrink:0; filter: grayscale(0.15) }
+.state-name { font-size:14px;font-weight:700;letter-spacing:0.005em;color:var(--text); font-family: var(--font-head); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.state .badge-container { flex-shrink:0; margin-left:auto; }
+.state::after {
+  content: "→";
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  flex-shrink:0;
+  margin-left: 0.4rem;
+}
+
+/* Badges */
+.new-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding:3px 9px;
+  border-radius:20px;
+  font-size:9px;
+  font-weight:800;
+  font-family: var(--font-mono);
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+}
+
+/* ===== Vote countdown (states within 30 days of an election) ===== */
+.countdown-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  background: rgba(255,177,0,0.1);
+  border: 1px solid rgba(255,177,0,0.45);
+  color: var(--accent);
+  padding:3px 8px 3px 7px;
+  border-radius:20px;
+  font-size:9px;
+  font-weight:800;
+  font-family: var(--font-mono);
+  letter-spacing:0.03em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.countdown-chip::before {
+  content:'';
+  width:5px;height:5px;border-radius:50%;
+  background: var(--accent);
+  flex-shrink:0;
+  animation: countdownPulse 1.4s ease-in-out infinite;
+}
+@keyframes countdownPulse {
+  0%,100% { opacity:1; }
+  50% { opacity:0.25; }
+}
+
+/* Wahltag mode — polls open */
+.countdown-chip.is-open {
+  background: rgba(52,195,124,0.12);
+  border-color: rgba(52,195,124,0.5);
+  color: var(--green);
+}
+.countdown-chip.is-open::before { background: var(--green); animation-duration: 0.85s; }
+
+/* Wahltag mode — counting in progress */
+.countdown-chip.is-counting {
+  background: rgba(79,127,168,0.15);
+  border-color: rgba(79,127,168,0.5);
+  color: #8fb4d8;
+}
+.countdown-chip.is-counting::before { background: #8fb4d8; animation-duration: 1.9s; }
+
+/* Bigger live countdown used in the Wahlen (elections) list */
+.election-countdown-live {
+  display:flex;
+  gap:6px;
+  margin-top:4px;
+  justify-content:flex-end;
+}
+.election-countdown-live .cd-unit {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background: rgba(255,177,0,0.08);
+  border:1px solid rgba(255,177,0,0.35);
+  border-radius:6px;
+  padding:2px 5px;
+  min-width:28px;
+}
+.election-countdown-live .cd-val {
+  font-family: var(--font-mono);
+  font-size:12px;
+  font-weight:800;
+  color: var(--accent);
+  line-height:1.1;
+}
+.election-countdown-live .cd-label {
+  font-family: var(--font-mono);
+  font-size:7px;
+  color: var(--text-muted);
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  line-height:1.3;
+}
+
+/* Wahltag mode — shown in place of the D/H/M units once voting starts */
+.cd-phase {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  padding:6px 14px;
+  border-radius:999px;
+  font-family: var(--font-mono);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+}
+.cd-phase-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+.cd-phase-open {
+  background: rgba(52,195,124,0.12);
+  border:1px solid rgba(52,195,124,0.5);
+  color: var(--green);
+}
+.cd-phase-open .cd-phase-dot { background: var(--green); animation: countdownPulse 0.85s ease-in-out infinite; }
+.cd-phase-counting {
+  background: rgba(79,127,168,0.15);
+  border:1px solid rgba(79,127,168,0.5);
+  color: #8fb4d8;
+}
+.cd-phase-counting .cd-phase-dot { background:#8fb4d8; animation: countdownPulse 1.9s ease-in-out infinite; }
+
+/* ===== Städte view ===== */
+.city-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.7rem; }
 .city-card {
-  background: var(--surface);
+  background: var(--panel);
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.1rem 0.9rem;
   text-align: center;
   cursor: pointer;
-  transition: all 0.22s ease;
+  transition: all 0.18s ease;
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
 }
-.city-card:hover { 
-  background: var(--surface-hover);
-  border-color: var(--accent);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(77,159,255,0.1);
-}
+.city-card:hover { background: var(--surface-hover); border-color: var(--accent); transform: translateY(-2px); }
 .city-card:active { transform: scale(0.97) }
-.city-card img { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)) }
-.city-card-name { font-size: 12px; font-weight: 700; color: var(--text); letter-spacing: 0.02em }
-.city-card-date { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono) }
-.city-stats-panel { display: none; animation: fadeInUp 0.25s ease; }
+.city-card img { width: 44px; height: 44px; object-fit: contain; filter: grayscale(0.15) }
+.city-card-name { font-size: 12.5px; font-weight: 700; color: var(--text); font-family: var(--font-head); }
+.city-card-date { font-size: 9.5px; color: var(--text-muted); font-family: var(--font-mono) }
+.city-stats-panel { display: none; animation: fadeInUp 0.22s ease; }
 .city-stats-panel.active { display: block }
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(8px) }
-  to { opacity: 1; transform: translateY(0) }
-}
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
 .city-back-btn {
-  background: var(--surface);
+  background: transparent;
   color: var(--text-dim);
-  border: 1px solid var(--border);
-  padding: 6px 14px;
-  border-radius: 7px;
-  font-size: 11px;
+  border: 1px solid var(--border-bright);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 10.5px;
   font-weight: 700;
   font-family: var(--font-mono);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
-  margin-bottom: 1rem;
-  display: flex;
+  margin-bottom: 1.1rem;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
 }
-.city-back-btn:hover { background: var(--surface-hover); border-color: var(--border-bright); color: var(--text) }
+.city-back-btn:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--text) }
 .city-stats-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  padding: 0.9rem;
-  background: var(--surface);
-  border-radius: 10px;
-  border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem;
+  padding: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
 }
-.city-stats-header img { width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)) }
-.city-stats-title h3 { margin: 0 0 0.2rem 0; font-size: 17px; font-weight: 800; letter-spacing: -0.01em }
-.city-stats-title .date { color: var(--text-muted); font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.04em }
+.city-stats-header img { width: 46px; height: 46px; object-fit: contain; filter: grayscale(0.15) }
+.city-stats-title h3 { margin: 0 0 0.2rem 0; font-family: var(--font-display); font-weight:400; font-size: 17px; text-transform:uppercase; }
+.city-stats-title .date { color: var(--text-muted); font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.05em }
 
+/* ===== Responsive ===== */
 @media screen and (max-width: 768px) {
-  .weitere-panel { width: 96%; max-height: 92vh; border-radius: 14px }
-  .weitere-header { padding: 0.9rem }
-  .city-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.6rem }
-  .city-card { padding: 0.7rem }
-  .city-card img { width: 40px; height: 40px }
+  .masthead { padding: 1.2rem 0.8rem 0; }
+  h1 { font-size: 22px; }
+  .tabs { gap:0.3rem; padding: 0.5rem 0.6rem; }
+  .tab-btn { font-size:9.5px; padding:0.6rem 0.3rem; }
+  .view { padding: 1.1rem 0.7rem 5.5rem; }
+  .bundestag-container { padding:1.1rem; }
+  .modal-body { grid-template-columns:1fr;gap:1rem;padding:1rem }
+  .modal-content { width:96%; }
+  .bar-row { gap:7px; margin:0.7rem 0 }
+  .party-logo { width:19px;height:19px }
+  .bar { height:22px;font-size:9.5px;padding-left:7px }
+  .percent { width:66px;font-size:12px }
+  .modal-header { padding:0.9rem 1rem }
+  .modal-header h2 { font-size:13px }
+  .coalition-stat-value { font-size:17px }
 }
 @media screen and (max-width: 480px) {
+  h1 { font-size:18px; }
+  .state img { width:28px;height:28px }
+  .state-name { font-size:12.5px }
   .city-grid { grid-template-columns: repeat(2, 1fr) }
-  .weitere-panel { border-radius: 12px }
 }
 
-/* Touch improvements */
+/* Touch */
 @media (hover: none) and (pointer: coarse) {
-  .state { min-height:110px }
-  .state:active { background:var(--surface-hover);transform:scale(0.98) }
-  .coalition-party:active { background:var(--surface-hover);transform:scale(0.98) }
-  .seats-btn:active { transform:scale(0.95) }
-  .close-btn:active { transform:scale(0.95) }
-  .state:hover { transform:none;box-shadow:none }
-  .bar:hover { opacity:1 }
-  .seats-btn:hover { transform:none;box-shadow:none }
-  .coalition-party:hover { background:var(--surface) }
+  .state:active { background:var(--surface-hover); }
+  .coalition-party:active { background:var(--surface-hover); }
+  .seats-btn:active, .diagram-btn:active, .close-btn:active { transform:scale(0.95) }
+  .state:hover { transform:none; }
+  .coalition-party:hover { background:rgba(255,255,255,0.03) }
 }
 </style>
-</head>
 <body>
 <div class="modal-overlay" id="seatsModal">
 <div class="modal-content">
@@ -892,93 +792,125 @@ h1 {
 </div>
 <div class="modal-overlay" id="diagramModal">
 <div class="diagram-modal-content">
-<div class="modal-header">
-<h2 id="diagramModalTitle">Umfragetrend</h2>
+<div class="modal-header diagram-modal-header">
+<div class="diagram-heading">
+<div class="diagram-eyebrow">📈 Verlauf</div>
+<h2 id="diagramModalTitle">Umfragen-Verlauf</h2>
+<div class="diagram-subtitle" id="diagramModalSubtitle">Wie sich die Parteien über die Zeit entwickelt haben</div>
+</div>
 <button class="close-btn" onclick="closeDiagramModal()">Schließen</button>
 </div>
 <div class="diagram-body">
+<div class="diagram-range-tabs" id="diagramRangeTabs"></div>
+<div class="diagram-meta" id="diagramMeta"></div>
 <div class="diagram-chart-wrap" id="diagramChartWrap"></div>
-<div class="diagram-note">Verlauf der veröffentlichten Umfragewerte über die Zeit</div>
+<div class="diagram-legend" id="diagramLegend"></div>
+<div class="diagram-note">Jeder Punkt ist eine veröffentlichte Umfrage — die Linien zeigen, wie sich die Werte der Parteien seitdem verändert haben.</div>
 </div>
 </div>
 </div>
-<div class="state-modal-overlay" id="stateModal">
-<div class="state-modal-header">
-<h2 id="stateModalTitle">Bundesland</h2>
-<button class="close-btn" onclick="closeStateModal()">Schließen</button>
+
+<div class="masthead">
+<h1>Deutschland<span>.</span>Umfragen</h1>
 </div>
-<div class="state-modal-body">
-<div class="date" id="stateModalDate"></div>
-<div id="stateModalBars"></div>
-<div class="history-section">
-<h3>Frühere Umfragen</h3>
-<div id="stateModalHistory"></div>
-</div>
-</div>
-</div>
-<h1>Deutschland Umfragen</h1>
 <div class="newest-poll-date" id="newest-poll-info"></div>
+
+<div class="ticker-wrap">
+<div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<nav class="tabs">
+<button class="tab-btn active" id="tabBund" data-view="bund" onclick="switchView('bund')">Bund</button>
+<button class="tab-btn" id="tabLaender" data-view="laender" onclick="switchView('laender')">Länder</button>
+<button class="tab-btn" id="tabStaedte" data-view="staedte" onclick="switchView('staedte')">Städte</button>
+<button class="tab-btn" id="tabWahlen" data-view="wahlen" onclick="switchView('wahlen')">Wahlen</button>
+</nav>
+
+<div class="view active" id="view-bund">
 <div class="bundestag-section">
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
 <div class="bundestag-container">
 <h2>Aktuelle Bundestag Umfrage <span id="bundestag-new-badge"></span></h2>
 <div class="date" id="bundestag-date"></div>
 <div id="bundestag-bars"></div>
 <div class="badge-container" id="bundestag-badge"></div>
 </div>
-<div class="bundestag-container">
-<h2>Wahlen 26/27</h2>
-<div id="elections-2026"></div>
 </div>
 </div>
+
+<div class="view" id="view-laender">
+<div class="view-heading">
+<h2>Bundesländer</h2>
+<span class="sub" id="laender-count"></span>
 </div>
-<div class="main">
+<div id="landerListWrap">
+<input type="text" class="search-box" id="stateSearch" placeholder="Bundesland suchen…" oninput="filterStates()">
 <div class="states" id="states"></div>
-<div class="panel">
-<h2 id="title">Bundesland auswählen</h2>
-<div class="date" id="date"></div>
-<div id="bars"></div>
+</div>
+<div id="landerStats" class="city-stats-panel">
+<button class="city-back-btn" onclick="showLanderList()">← Zurück</button>
+<div class="city-stats-header">
+<img id="landerStatsLogo" src="" alt="">
+<div class="city-stats-title">
+<h3 id="landerStatsName"></h3>
+<div class="date" id="landerStatsDate"></div>
+</div>
+</div>
+<div id="landerStatsBars"></div>
 <div class="history-section">
 <h3>Frühere Umfragen</h3>
-<div id="history"></div>
+<div class="history-legend">
+<span class="history-legend-item"><span class="history-type-badge u">U</span> Umfrage</span>
+<span class="history-legend-item"><span class="history-type-badge e">E</span> Ergebnis</span>
+</div>
+<div id="landerStatsHistory"></div>
 </div>
 </div>
 </div>
 
-<div class="weitere-btn-container">
-  <button class="weitere-btn" onclick="openWeitere()" id="weitereMainBtn">
-    🏙️ Weitere Umfragen
-  </button>
+<div class="view" id="view-staedte">
+<div class="view-heading">
+<h2>Städte</h2>
+<span class="sub">Stadtratswahl-Umfragen</span>
+</div>
+<div id="cityGridWrap">
+<input type="text" class="search-box" id="citySearch" placeholder="Stadt suchen…" oninput="filterCities()">
+<div id="cityGrid" class="city-grid"></div>
+</div>
+<div id="cityStats" class="city-stats-panel">
+<button class="city-back-btn" onclick="showCityGrid()">← Zurück</button>
+<div class="city-stats-header">
+<img id="cityStatsLogo" src="" alt="">
+<div class="city-stats-title">
+<h3 id="cityStatsName"></h3>
+<div class="date" id="cityStatsDate"></div>
+</div>
+</div>
+<div id="cityStatsBars"></div>
+<div class="history-section">
+<h3>Frühere Umfragen</h3>
+<div class="history-legend">
+<span class="history-legend-item"><span class="history-type-badge u">U</span> Umfrage</span>
+<span class="history-legend-item"><span class="history-type-badge e">E</span> Ergebnis</span>
+</div>
+<div id="cityStatsHistory"></div>
+</div>
+</div>
 </div>
 
-<!-- Weitere Umfragen Overlay -->
-<div class="weitere-overlay" id="weitereOverlay">
-  <div class="weitere-panel">
-    <div class="weitere-header">
-      <h2 id="weitereTitle">🏙️ Weitere Umfragen</h2>
-      <button class="close-btn" onclick="closeWeitere()">Schließen</button>
-    </div>
-    <div class="weitere-body" id="weitereBody">
-      <div id="cityGrid" class="city-grid"></div>
-      <div id="cityStats" class="city-stats-panel">
-        <button class="city-back-btn" onclick="showCityGrid()">← Zurück</button>
-        <div class="city-stats-header">
-          <img id="cityStatsLogo" src="" alt="">
-          <div class="city-stats-title">
-            <h3 id="cityStatsName"></h3>
-            <div class="date" id="cityStatsDate"></div>
-          </div>
-        </div>
-        <div id="cityStatsBars"></div>
-        <div class="history-section">
-          <h3>Frühere Umfragen</h3>
-          <div id="cityStatsHistory"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="view" id="view-wahlen">
+<div class="view-heading">
+<h2>Anstehende Wahlen</h2>
+<span class="sub">2026 / 2027</span>
+</div>
+<div id="elections-2026"></div>
 </div>
 
+<footer class="site-footer">
+<div class="footer-sources">
+<span class="footer-sources-label">Quellen</span>
+<span class="footer-sources-list">Insa · Forsa · Civey · pollytix · Allensbach · Ipsos · YouGov · Forschungsgruppe Wahlen · Infratest dimap · GMS · Verian</span>
+</div>
+</footer>
 
 <script>
 // Handy Detektor
@@ -1045,6 +977,27 @@ const colors = {
 "CSU":"#008AC5","CDU":"#000000","AfD":"#009EE0","BSW":"#5A1F47",
 "SPD":"#E3000F","Grüne":"#64A12D","FDP":"#FFED00","Linke":"#E74C8C","FW":"#EE7D00","Sonstige":"#666"
 };
+
+// Some party brand colors (CDU's black) are unreadable as text on this
+// site's dark background. Bars/dots use the true color as a fill, which
+// is fine — but anywhere a party color is used as TEXT color, run it
+// through this so near-black becomes a light, readable gray instead.
+function readableTextColor(hex) {
+  if(!hex) return '#e8e8e8';
+  const h = hex.toLowerCase();
+  if(h === '#000000' || h === '#000' || h === '#111111' || h === '#111') return '#d8d8d8';
+  return hex;
+}
+
+// Historical poll entries can be tagged { type: 'E' } for an actual election
+// result (Ergebnis) instead of a poll (Umfrage, the default when omitted).
+function historyTypeBadge(h) {
+  const isErgebnis = h.type === 'E';
+  const cls = isErgebnis ? 'e' : 'u';
+  const letter = isErgebnis ? 'E' : 'U';
+  const title = isErgebnis ? 'Ergebnis' : 'Umfrage';
+  return `<span class="history-type-badge ${cls}" title="${title}">${letter}</span>`;
+}
 
 const logos = {
 "CSU":"https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/CSU_Logo_since_2016.svg/960px-CSU_Logo_since_2016.svg.png",
@@ -1134,12 +1087,12 @@ const data = {
   'lastElection': {'results': {'CDU': 24.1, 'SPD': 11.0, 'AfD': 9.7, 'FDP': 10.5, 'BSW': 0, 'Grüne': 32.6, 'Linke': 3.6, 'Sonstige': 8.5}},
   'results': {'CDU': 26, 'SPD': 5, 'AfD': 22, 'FDP': 4, 'BSW': 0, 'Grüne': 32, 'Linke': 5, 'Sonstige': 6},
   'history': [
-    {'date': '08.03.2026', 'results': {'CDU': 29.7, 'SPD': 5.5, 'AfD': 18.8, 'FDP': 4.4, 'BSW': 0, 'Grüne': 30.2, 'Linke': 4.4, 'Sonstige': 7}},
-    {'date': '05.03.2026', 'results': {'CDU': 28, 'SPD': 8, 'AfD': 18, 'FDP': 5.5, 'BSW': 0, 'Grüne': 28, 'Linke': 5.5, 'Sonstige': 7}},
-    {'date': '04.03.2026', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 20, 'FDP': 6, 'BSW': 0, 'Grüne': 24, 'Linke': 6, 'Sonstige': 8}},
-	{'date': '27.02.2026', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 19, 'FDP': 6, 'BSW': 0, 'Grüne': 25, 'Linke': 6, 'Sonstige': 8}},
-    {'date': '26.02.2026', 'results': {'CDU': 28, 'SPD': 7, 'AfD': 18, 'FDP': 6, 'BSW': 0, 'Grüne': 27, 'Linke': 5.5, 'Sonstige': 8.5}},
-	{'date': '23.02.2026', 'results': {'CDU': 28, 'SPD': 10, 'AfD': 20, 'FDP': 6, 'BSW': 3, 'Grüne': 22, 'Linke': 7, 'Sonstige': 4}}
+    {'date': '08.03.2026', 'type': 'E', 'results': {'CDU': 29.7, 'SPD': 5.5, 'AfD': 18.8, 'FDP': 4.4, 'BSW': 0, 'Grüne': 30.2, 'Linke': 4.4, 'Sonstige': 7}},
+    {'date': '05.03.2026', 'type': 'U', 'results': {'CDU': 28, 'SPD': 8, 'AfD': 18, 'FDP': 5.5, 'BSW': 0, 'Grüne': 28, 'Linke': 5.5, 'Sonstige': 7}},
+    {'date': '04.03.2026', 'type': 'U', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 20, 'FDP': 6, 'BSW': 0, 'Grüne': 24, 'Linke': 6, 'Sonstige': 8}},
+	{'date': '27.02.2026', 'type': 'U', 'results': {'CDU': 27, 'SPD': 9, 'AfD': 19, 'FDP': 6, 'BSW': 0, 'Grüne': 25, 'Linke': 6, 'Sonstige': 8}},
+    {'date': '26.02.2026', 'type': 'U', 'results': {'CDU': 28, 'SPD': 7, 'AfD': 18, 'FDP': 6, 'BSW': 0, 'Grüne': 27, 'Linke': 5.5, 'Sonstige': 8.5}},
+	{'date': '23.02.2026', 'type': 'U', 'results': {'CDU': 28, 'SPD': 10, 'AfD': 20, 'FDP': 6, 'BSW': 3, 'Grüne': 22, 'Linke': 7, 'Sonstige': 4}}
   ]
 }, 
 'Bayern': {
@@ -1148,14 +1101,14 @@ const data = {
   'lastElection': {'results': {'CSU': 37.0, 'SPD': 8.4, 'AfD': 14.6, 'FDP': 3.0, 'BSW': 0, 'Grüne': 9.2, 'FW': 15.8, 'Linke': 1.5, 'Sonstige': 10.5}},
   'results': {'CSU': 37.7, 'SPD': 6, 'AfD': 19.3, 'FDP': 2, 'BSW': 3, 'Grüne': 13.7, 'FW': 12, 'Linke': 3, 'Sonstige': 3.3},
   'history': [
-	{'date': '18.07.2026', 'results': {'CSU': 37.3, 'SPD': 6.3, 'AfD': 19, 'FDP': 2, 'BSW': 3, 'Grüne': 14, 'FW': 12, 'Linke': 3, 'Sonstige': 3.3}},
-	{'date': '14.06.2026', 'results': {'CSU': 37.7, 'SPD': 6.7, 'AfD': 19, 'FDP': 2, 'BSW': 3, 'Grüne': 13.7, 'FW': 11.7, 'Linke': 3, 'Sonstige': 3.3}},
-	{'date': '16.05.2026', 'results': {'CSU': 38, 'SPD': 7.3, 'AfD': 18.3, 'FDP': 2, 'BSW': 3, 'Grüne': 13, 'FW': 11.3, 'Linke': 3, 'Sonstige': 4}},
-	{'date': '19.04.2026', 'results': {'CSU': 38.7, 'SPD': 7.3, 'AfD': 18, 'FDP': 2, 'BSW': 2.7, 'Grüne': 12.7, 'FW': 10.7, 'Linke': 3, 'Sonstige': 5}},
-	{'date': '14.03.2026', 'results': {'CSU': 39.3, 'SPD': 7.3, 'AfD': 17.7, 'FDP': 2, 'BSW': 2, 'Grüne': 12, 'FW': 11, 'Linke': 3, 'Sonstige': 5.7}},
-    {'date': '03.03.2026', 'results': {'CSU': 39.7, 'SPD': 7, 'AfD': 18, 'FDP': 2, 'BSW': 1.3, 'Grüne': 12, 'FW': 11, 'Linke': 3, 'Sonstige': 6}},
-    {'date': '14.02.2026', 'results': {'CSU': 39.7, 'SPD': 7.3, 'AfD': 18.3, 'FDP': 2, 'BSW': 1, 'Grüne': 12, 'FW': 10.7, 'Linke': 3, 'Sonstige': 7}},
-    {'date': '19.01.2026', 'results': {'CSU': 39.3, 'SPD': 7, 'AfD': 18.7, 'FDP': 2, 'BSW': 1.5, 'Grüne': 12, 'FW': 10.7, 'Linke': 3, 'Sonstige': 7}}
+	{'date': '18.07.2026', 'type': 'U', 'results': {'CSU': 37.3, 'SPD': 6.3, 'AfD': 19, 'FDP': 2, 'BSW': 3, 'Grüne': 14, 'FW': 12, 'Linke': 3, 'Sonstige': 3.3}},
+	{'date': '14.06.2026', 'type': 'U', 'results': {'CSU': 37.7, 'SPD': 6.7, 'AfD': 19, 'FDP': 2, 'BSW': 3, 'Grüne': 13.7, 'FW': 11.7, 'Linke': 3, 'Sonstige': 3.3}},
+	{'date': '16.05.2026', 'type': 'U', 'results': {'CSU': 38, 'SPD': 7.3, 'AfD': 18.3, 'FDP': 2, 'BSW': 3, 'Grüne': 13, 'FW': 11.3, 'Linke': 3, 'Sonstige': 4}},
+	{'date': '19.04.2026', 'type': 'U', 'results': {'CSU': 38.7, 'SPD': 7.3, 'AfD': 18, 'FDP': 2, 'BSW': 2.7, 'Grüne': 12.7, 'FW': 10.7, 'Linke': 3, 'Sonstige': 5}},
+	{'date': '14.03.2026', 'type': 'U', 'results': {'CSU': 39.3, 'SPD': 7.3, 'AfD': 17.7, 'FDP': 2, 'BSW': 2, 'Grüne': 12, 'FW': 11, 'Linke': 3, 'Sonstige': 5.7}},
+    {'date': '03.03.2026', 'type': 'U', 'results': {'CSU': 39.7, 'SPD': 7, 'AfD': 18, 'FDP': 2, 'BSW': 1.3, 'Grüne': 12, 'FW': 11, 'Linke': 3, 'Sonstige': 6}},
+    {'date': '14.02.2026', 'type': 'U', 'results': {'CSU': 39.7, 'SPD': 7.3, 'AfD': 18.3, 'FDP': 2, 'BSW': 1, 'Grüne': 12, 'FW': 10.7, 'Linke': 3, 'Sonstige': 7}},
+    {'date': '19.01.2026', 'type': 'U', 'results': {'CSU': 39.3, 'SPD': 7, 'AfD': 18.7, 'FDP': 2, 'BSW': 1.5, 'Grüne': 12, 'FW': 10.7, 'Linke': 3, 'Sonstige': 7}}
   ]
 }, 
 'Berlin': {
@@ -1164,17 +1117,17 @@ const data = {
   'lastElection': {'results': {'CDU': 28.2, 'SPD': 18.4, 'AfD': 9.1, 'FDP': 4.6, 'BSW': 0, 'Grüne': 13.9, 'Linke': 12.2, 'Sonstige': 13.6}},
   'results': {'CDU': 19, 'SPD': 13, 'AfD': 17.7, 'FDP': 3, 'BSW': 3.3, 'Grüne': 16.3, 'Linke': 20.7, 'Sonstige': 7},
   'history': [
-	{'date': '15.08.2026', 'results': {'CDU': 19, 'SPD': 13.3, 'AfD': 18, 'FDP': 3.3, 'BSW': 3.3, 'Grüne': 16.3, 'Linke': 19.3, 'Sonstige': 7.3}},
-	{'date': '05.08.2026', 'results': {'CDU': 19, 'SPD': 12.3, 'AfD': 17.7, 'FDP': 3.3, 'BSW': 3.3, 'Grüne': 16.7, 'Linke': 20.3, 'Sonstige': 7.3}},
-	{'date': '23.07.2026', 'results': {'CDU': 19, 'SPD': 12.7, 'AfD': 17.3, 'FDP': 3.7, 'BSW': 3.3, 'Grüne': 16.7, 'Linke': 19.7, 'Sonstige': 7.7}},
-	{'date': '16.07.2026', 'results': {'CDU': 18.7, 'SPD': 12.7, 'AfD': 17, 'FDP': 3.3, 'BSW': 3, 'Grüne': 17.7, 'Linke': 20.3, 'Sonstige': 7.3}},
-	{'date': '01.07.2026', 'results': {'CDU': 19.7, 'SPD': 14.3, 'AfD': 18, 'FDP': 3.7, 'BSW': 3.3, 'Grüne': 17, 'Linke': 16.7, 'Sonstige': 7.3}},
-    {'date': '15.06.2026', 'results': {'CDU': 20.7, 'SPD': 15.3, 'AfD': 17.7, 'FDP': 4, 'BSW': 3.3, 'Grüne': 16, 'Linke': 15.3, 'Sonstige': 7.7}},
-    {'date': '15.05.2026', 'results': {'CDU': 19.7, 'SPD': 15.3, 'AfD': 17.7, 'FDP': 3.7, 'BSW': 3.3, 'Grüne': 16.3, 'Linke': 16.3, 'Sonstige': 7.7}},
-    {'date': '29.04.2026', 'results': {'CDU': 21, 'SPD': 15.7, 'AfD': 17, 'FDP': 3, 'BSW': 3.7, 'Grüne': 16, 'Linke': 16.3, 'Sonstige': 7.3}},
-	{'date': '14.04.2026', 'results': {'CDU': 22.3, 'SPD': 16.3, 'AfD': 16.3, 'FDP': 3, 'BSW': 3.7, 'Grüne': 15, 'Linke': 16, 'Sonstige': 7.3}},
-	{'date': '30.03.2026', 'results': {'CDU': 22.7, 'SPD': 16, 'AfD': 16.3, 'FDP': 3.3, 'BSW': 3.7, 'Grüne': 15, 'Linke': 16, 'Sonstige': 7}},
-	{'date': '25.02.2026', 'results': {'CDU': 22, 'SPD': 15, 'AfD': 16.7, 'FDP': 3, 'BSW': 3.3, 'Grüne': 16, 'Linke': 16.7, 'Sonstige': 8}}
+	{'date': '15.08.2026', 'type': 'U', 'results': {'CDU': 19, 'SPD': 13.3, 'AfD': 18, 'FDP': 3.3, 'BSW': 3.3, 'Grüne': 16.3, 'Linke': 19.3, 'Sonstige': 7.3}},
+	{'date': '05.08.2026', 'type': 'U', 'results': {'CDU': 19, 'SPD': 12.3, 'AfD': 17.7, 'FDP': 3.3, 'BSW': 3.3, 'Grüne': 16.7, 'Linke': 20.3, 'Sonstige': 7.3}},
+	{'date': '23.07.2026', 'type': 'U', 'results': {'CDU': 19, 'SPD': 12.7, 'AfD': 17.3, 'FDP': 3.7, 'BSW': 3.3, 'Grüne': 16.7, 'Linke': 19.7, 'Sonstige': 7.7}},
+	{'date': '16.07.2026', 'type': 'U', 'results': {'CDU': 18.7, 'SPD': 12.7, 'AfD': 17, 'FDP': 3.3, 'BSW': 3, 'Grüne': 17.7, 'Linke': 20.3, 'Sonstige': 7.3}},
+	{'date': '01.07.2026', 'type': 'U', 'results': {'CDU': 19.7, 'SPD': 14.3, 'AfD': 18, 'FDP': 3.7, 'BSW': 3.3, 'Grüne': 17, 'Linke': 16.7, 'Sonstige': 7.3}},
+    {'date': '15.06.2026', 'type': 'U', 'results': {'CDU': 20.7, 'SPD': 15.3, 'AfD': 17.7, 'FDP': 4, 'BSW': 3.3, 'Grüne': 16, 'Linke': 15.3, 'Sonstige': 7.7}},
+    {'date': '15.05.2026', 'type': 'U', 'results': {'CDU': 19.7, 'SPD': 15.3, 'AfD': 17.7, 'FDP': 3.7, 'BSW': 3.3, 'Grüne': 16.3, 'Linke': 16.3, 'Sonstige': 7.7}},
+    {'date': '29.04.2026', 'type': 'U', 'results': {'CDU': 21, 'SPD': 15.7, 'AfD': 17, 'FDP': 3, 'BSW': 3.7, 'Grüne': 16, 'Linke': 16.3, 'Sonstige': 7.3}},
+	{'date': '14.04.2026', 'type': 'U', 'results': {'CDU': 22.3, 'SPD': 16.3, 'AfD': 16.3, 'FDP': 3, 'BSW': 3.7, 'Grüne': 15, 'Linke': 16, 'Sonstige': 7.3}},
+	{'date': '30.03.2026', 'type': 'U', 'results': {'CDU': 22.7, 'SPD': 16, 'AfD': 16.3, 'FDP': 3.3, 'BSW': 3.7, 'Grüne': 15, 'Linke': 16, 'Sonstige': 7}},
+	{'date': '25.02.2026', 'type': 'U', 'results': {'CDU': 22, 'SPD': 15, 'AfD': 16.7, 'FDP': 3, 'BSW': 3.3, 'Grüne': 16, 'Linke': 16.7, 'Sonstige': 8}}
   ]
 }, 
 'Brandenburg': {
@@ -1183,9 +1136,9 @@ const data = {
   'lastElection': {'results': {'CDU': 15.6, 'SPD': 30.9, 'AfD': 29.2, 'FDP': 1.3, 'BSW': 13.5, 'Grüne': 4.1, 'Linke': 3.0, 'Sonstige': 2.4}},
   'results': {'CDU': 13, 'SPD': 23.7, 'AfD': 35, 'FDP': 0, 'BSW': 6.7, 'Grüne': 5.3, 'Linke': 9, 'Sonstige': 7.3},
   'history': [
-    {'date': '21.03.2026', 'results': {'CDU': 13.7, 'SPD': 23.7, 'AfD': 34.3, 'FDP': 0, 'BSW': 7.7, 'Grüne': 5, 'Linke': 8, 'Sonstige': 7.7}},
-    {'date': '15.01.2026', 'results': {'CDU': 13.3, 'SPD': 23.7, 'AfD': 34.3, 'FDP': 2, 'BSW': 8, 'Grüne': 4.7, 'Linke': 8.7, 'Sonstige': 6.7}},
-    {'date': '10.12.2025', 'results': {'CDU': 13.7, 'SPD': 23, 'AfD': 33.7, 'FDP': 2, 'BSW': 8.3, 'Grüne': 4.7, 'Linke': 9, 'Sonstige': 7}}
+    {'date': '21.03.2026', 'type': 'U', 'results': {'CDU': 13.7, 'SPD': 23.7, 'AfD': 34.3, 'FDP': 0, 'BSW': 7.7, 'Grüne': 5, 'Linke': 8, 'Sonstige': 7.7}},
+    {'date': '15.01.2026', 'type': 'U', 'results': {'CDU': 13.3, 'SPD': 23.7, 'AfD': 34.3, 'FDP': 2, 'BSW': 8, 'Grüne': 4.7, 'Linke': 8.7, 'Sonstige': 6.7}},
+    {'date': '10.12.2025', 'type': 'U', 'results': {'CDU': 13.7, 'SPD': 23, 'AfD': 33.7, 'FDP': 2, 'BSW': 8.3, 'Grüne': 4.7, 'Linke': 9, 'Sonstige': 7}}
   ]
 }, 
 'Bremen': {
@@ -1194,9 +1147,9 @@ const data = {
   'lastElection': {'results': {'CDU': 25.9, 'SPD': 29.8, 'AfD': 11.0, 'FDP': 5.1, 'BSW': 0, 'Grüne': 11.7, 'Linke': 10.9, 'Sonstige': 5.6}},
   'results': {'CDU': 21, 'SPD': 20, 'AfD': 17, 'FDP': 4, 'BSW': 3, 'Grüne': 15, 'Linke': 14, 'Sonstige': 6},
   'history': [
-    {'date': '19.03.2026', 'results': {'CDU': 24, 'SPD': 22, 'AfD': 15, 'FDP': 0, 'BSW': 3, 'Grüne': 15, 'Linke': 13, 'Sonstige': 8}},
-    {'date': '28.04.2025', 'results': {'CDU': 22, 'SPD': 25, 'AfD': 15, 'FDP': 0, 'BSW': 0, 'Grüne': 14, 'Linke': 13, 'Sonstige': 11}},
-    {'date': 'XX.XX.XXXX', 'results': {'CDU': 0, 'SPD': 0, 'AfD': 0, 'FDP': 0, 'BSW': 0, 'Grüne': 0, 'Linke': 0, 'Sonstige': 0}}
+    {'date': '19.03.2026', 'type': 'U', 'results': {'CDU': 24, 'SPD': 22, 'AfD': 15, 'FDP': 0, 'BSW': 3, 'Grüne': 15, 'Linke': 13, 'Sonstige': 8}},
+    {'date': '28.04.2025', 'type': 'U', 'results': {'CDU': 22, 'SPD': 25, 'AfD': 15, 'FDP': 0, 'BSW': 0, 'Grüne': 14, 'Linke': 13, 'Sonstige': 11}},
+    {'date': 'XX.XX.XXXX', 'type': 'U', 'results': {'CDU': 0, 'SPD': 0, 'AfD': 0, 'FDP': 0, 'BSW': 0, 'Grüne': 0, 'Linke': 0, 'Sonstige': 0}}
   ]
 }, 
 'Hamburg': {
@@ -1205,9 +1158,9 @@ const data = {
   'lastElection': {'results': {'CDU': 24.2, 'SPD': 24.2, 'AfD': 7.4, 'FDP': 4.97, 'BSW': 0, 'Grüne': 12.2, 'Linke': 12.2, 'Sonstige': 14.83}},
   'results': {'CDU': 16, 'SPD': 31, 'AfD': 12, 'FDP': 3, 'BSW': 0, 'Grüne': 17, 'Linke': 14, 'Sonstige': 7},
   'history': [
-    {'date': '25.03.2026', 'results': {'CDU': 20, 'SPD': 30, 'AfD': 10, 'FDP': 0, 'BSW': 0, 'Grüne': 20, 'Linke': 12, 'Sonstige': 8}},
-    {'date': '01.03.2025', 'results': {'CDU': 18, 'SPD': 33.5, 'AfD': 9, 'FDP': 2.5, 'BSW': 2.5, 'Grüne': 16.5, 'Linke': 14, 'Sonstige': 4}},
-    {'date': '27.02.2025', 'results': {'CDU': 18, 'SPD': 33, 'AfD': 9, 'FDP': 0, 'BSW': 0, 'Grüne': 17, 'Linke': 12, 'Sonstige': 11}}
+    {'date': '25.03.2026', 'type': 'U', 'results': {'CDU': 20, 'SPD': 30, 'AfD': 10, 'FDP': 0, 'BSW': 0, 'Grüne': 20, 'Linke': 12, 'Sonstige': 8}},
+    {'date': '01.03.2025', 'type': 'U', 'results': {'CDU': 18, 'SPD': 33.5, 'AfD': 9, 'FDP': 2.5, 'BSW': 2.5, 'Grüne': 16.5, 'Linke': 14, 'Sonstige': 4}},
+    {'date': '27.02.2025', 'type': 'U', 'results': {'CDU': 18, 'SPD': 33, 'AfD': 9, 'FDP': 0, 'BSW': 0, 'Grüne': 17, 'Linke': 12, 'Sonstige': 11}}
   ]
 }, 
 'Hessen': {
@@ -1216,9 +1169,9 @@ const data = {
   'lastElection': {'results': {'CDU': 34.6, 'SPD': 15.1, 'AfD': 18.4, 'FDP': 5.0, 'BSW': 0, 'Grüne': 14.8, 'Linke': 3.1, 'Sonstige': 9.0}},
   'results': {'CDU': 30, 'SPD': 15, 'AfD': 22, 'FDP': 3, 'BSW': 0, 'Grüne': 13, 'Linke': 7, 'Sonstige': 10},
   'history': [
-    {'date': '18.03.2026', 'results': {'CDU': 31, 'SPD': 15, 'AfD': 21, 'FDP': 4, 'BSW': 3, 'Grüne': 13, 'Linke': 6, 'Sonstige': 7}},
-    {'date': '02.02.2026', 'results': {'CDU': 32, 'SPD': 16, 'AfD': 20, 'FDP': 3, 'BSW': 0, 'Grüne': 14, 'Linke': 6, 'Sonstige': 9}},
-    {'date': '09.10.2025', 'results': {'CDU': 32, 'SPD': 15, 'AfD': 20, 'FDP': 4, 'BSW': 3, 'Grüne': 12, 'Linke': 7, 'Sonstige': 7}}
+    {'date': '18.03.2026', 'type': 'U', 'results': {'CDU': 31, 'SPD': 15, 'AfD': 21, 'FDP': 4, 'BSW': 3, 'Grüne': 13, 'Linke': 6, 'Sonstige': 7}},
+    {'date': '02.02.2026', 'type': 'U', 'results': {'CDU': 32, 'SPD': 16, 'AfD': 20, 'FDP': 3, 'BSW': 0, 'Grüne': 14, 'Linke': 6, 'Sonstige': 9}},
+    {'date': '09.10.2025', 'type': 'U', 'results': {'CDU': 32, 'SPD': 15, 'AfD': 20, 'FDP': 4, 'BSW': 3, 'Grüne': 12, 'Linke': 7, 'Sonstige': 7}}
   ]
 }, 
 'Mecklenburg-Vorpommern': {
@@ -1227,11 +1180,11 @@ const data = {
   'lastElection': {'results': {'CDU': 13.3, 'SPD': 39.6, 'AfD': 16.7, 'FDP': 2.1, 'BSW': 0, 'Grüne': 4.2, 'Linke': 9.9, 'Sonstige': 14.2}},
   'results': {'CDU': 9.7, 'SPD': 28.7, 'AfD': 35.7, 'FDP': 3, 'BSW': 4.7, 'Grüne': 4.7, 'Linke': 11.3, 'Sonstige': 3.3},
   'history': [
-	{'date': '09.07.2026', 'results': {'CDU': 9.7, 'SPD': 28, 'AfD': 35.7, 'FDP': 3, 'BSW': 5, 'Grüne': 4.3, 'Linke': 12, 'Sonstige': 4.3}},
-	{'date': '22.06.2026', 'results': {'CDU': 10.7, 'SPD': 27, 'AfD': 35, 'FDP': 3, 'BSW': 5.3, 'Grüne': 4.3, 'Linke': 11.3, 'Sonstige': 4.3}},
-    {'date': '13.05.2026', 'results': {'CDU': 11.7, 'SPD': 25.3, 'AfD': 35.7, 'FDP': 2.5, 'BSW': 5, 'Grüne': 4.3, 'Linke': 11.3, 'Sonstige': 5}},
-    {'date': '17.03.2026', 'results': {'CDU': 12.7, 'SPD': 24.7, 'AfD': 35.3, 'FDP': 2.5, 'BSW': 5.3, 'Grüne': 4.3, 'Linke': 11, 'Sonstige': 5}},
-    {'date': '19.02.2026', 'results': {'CDU': 13, 'SPD': 22.3, 'AfD': 36.7, 'FDP': 2, 'BSW': 6, 'Grüne': 4.3, 'Linke': 11.7, 'Sonstige': 5.3}}
+	{'date': '09.07.2026', 'type': 'U', 'results': {'CDU': 9.7, 'SPD': 28, 'AfD': 35.7, 'FDP': 3, 'BSW': 5, 'Grüne': 4.3, 'Linke': 12, 'Sonstige': 4.3}},
+	{'date': '22.06.2026', 'type': 'U', 'results': {'CDU': 10.7, 'SPD': 27, 'AfD': 35, 'FDP': 3, 'BSW': 5.3, 'Grüne': 4.3, 'Linke': 11.3, 'Sonstige': 4.3}},
+    {'date': '13.05.2026', 'type': 'U', 'results': {'CDU': 11.7, 'SPD': 25.3, 'AfD': 35.7, 'FDP': 2.5, 'BSW': 5, 'Grüne': 4.3, 'Linke': 11.3, 'Sonstige': 5}},
+    {'date': '17.03.2026', 'type': 'U', 'results': {'CDU': 12.7, 'SPD': 24.7, 'AfD': 35.3, 'FDP': 2.5, 'BSW': 5.3, 'Grüne': 4.3, 'Linke': 11, 'Sonstige': 5}},
+    {'date': '19.02.2026', 'type': 'U', 'results': {'CDU': 13, 'SPD': 22.3, 'AfD': 36.7, 'FDP': 2, 'BSW': 6, 'Grüne': 4.3, 'Linke': 11.7, 'Sonstige': 5.3}}
   ]
 }, 
 'Niedersachsen': {
@@ -1240,9 +1193,9 @@ const data = {
   'lastElection': {'results': {'CDU': 28.1, 'SPD': 33.4, 'AfD': 10.9, 'FDP': 4.7, 'BSW': 0, 'Grüne': 14.5, 'Linke': 2.7, 'Sonstige': 5.7}},
   'results': {'CDU': 25, 'SPD': 25, 'AfD': 20, 'FDP': 4, 'BSW': 3, 'Grüne': 12, 'Linke': 7, 'Sonstige': 4},
   'history': [
-    {'date': '25.02.2026', 'results': {'CDU': 27, 'SPD': 26, 'AfD': 21, 'FDP': 3, 'BSW': 0, 'Grüne': 10, 'Linke': 7, 'Sonstige': 6}},
-    {'date': '19.11.2025', 'results': {'CDU': 26, 'SPD': 26, 'AfD': 20, 'FDP': 3, 'BSW': 3, 'Grüne': 12, 'Linke': 6, 'Sonstige': 4}},
-    {'date': '19.02.2025', 'results': {'CDU': 30, 'SPD': 25, 'AfD': 16, 'FDP': 5, 'BSW': 5, 'Grüne': 10, 'Linke': 5, 'Sonstige': 4}}
+    {'date': '25.02.2026', 'type': 'U', 'results': {'CDU': 27, 'SPD': 26, 'AfD': 21, 'FDP': 3, 'BSW': 0, 'Grüne': 10, 'Linke': 7, 'Sonstige': 6}},
+    {'date': '19.11.2025', 'type': 'U', 'results': {'CDU': 26, 'SPD': 26, 'AfD': 20, 'FDP': 3, 'BSW': 3, 'Grüne': 12, 'Linke': 6, 'Sonstige': 4}},
+    {'date': '19.02.2025', 'type': 'U', 'results': {'CDU': 30, 'SPD': 25, 'AfD': 16, 'FDP': 5, 'BSW': 5, 'Grüne': 10, 'Linke': 5, 'Sonstige': 4}}
   ]
 }, 
 'Nordrhein-Westfalen': {
@@ -1251,9 +1204,9 @@ const data = {
   'lastElection': {'results': {'CDU': 35.7, 'SPD': 26.7, 'AfD': 5.4, 'FDP': 5.9, 'BSW': 0, 'Grüne': 18.2, 'Linke': 2.0, 'Sonstige': 6.1}},
   'results': {'CDU': 32, 'SPD': 17, 'AfD': 17, 'FDP': 5, 'BSW': 0, 'Grüne': 15, 'Linke': 6, 'Sonstige': 8},
   'history': [
-    {'date': '08.05.2026', 'results': {'CDU': 34, 'SPD': 18, 'AfD': 17, 'FDP': 4, 'BSW': 0, 'Grüne': 15, 'Linke': 9, 'Sonstige': 3}},
-    {'date': '22.04.2026', 'results': {'CDU': 32, 'SPD': 14, 'AfD': 20, 'FDP': 3, 'BSW': 0, 'Grüne': 17, 'Linke': 6, 'Sonstige': 8}},
-    {'date': '01.02.2026', 'results': {'CDU': 35, 'SPD': 20, 'AfD': 15, 'FDP': 4, 'BSW': 0, 'Grüne': 13, 'Linke': 6, 'Sonstige': 7}}
+    {'date': '08.05.2026', 'type': 'U', 'results': {'CDU': 34, 'SPD': 18, 'AfD': 17, 'FDP': 4, 'BSW': 0, 'Grüne': 15, 'Linke': 9, 'Sonstige': 3}},
+    {'date': '22.04.2026', 'type': 'U', 'results': {'CDU': 32, 'SPD': 14, 'AfD': 20, 'FDP': 3, 'BSW': 0, 'Grüne': 17, 'Linke': 6, 'Sonstige': 8}},
+    {'date': '01.02.2026', 'type': 'U', 'results': {'CDU': 35, 'SPD': 20, 'AfD': 15, 'FDP': 4, 'BSW': 0, 'Grüne': 13, 'Linke': 6, 'Sonstige': 7}}
   ]
 }, 
 'Rheinland-Pfalz': {
@@ -1262,10 +1215,10 @@ const data = {
   'lastElection': {'results': {'CDU': 27.7, 'SPD': 35.7, 'AfD': 8.3, 'FDP': 5.5, 'BSW': 0, 'FW': 5.4, 'Grüne': 9.3, 'Linke': 2.5, 'Sonstige': 5.6}},
   'results': {'CDU': 28, 'SPD': 19, 'AfD': 24, 'FDP': 3, 'BSW': 0, 'Grüne': 11, 'FW': 3, 'Linke': 5, 'Sonstige': 7},
   'history': [
-	{'date': '23.03.2026', 'results': {'CDU': 31, 'SPD': 25.9, 'AfD': 19.5, 'FDP': 2.1, 'BSW': 1.9, 'Grüne': 7.9, 'FW': 4.2, 'Linke': 4.4, 'Sonstige': 3.2}},
-    {'date': '18.03.2026', 'results': {'CDU': 28, 'SPD': 27, 'AfD': 20, 'FDP': 0, 'BSW': 0, 'Grüne': 9, 'FW': 5, 'Linke': 5, 'Sonstige': 6}},
-    {'date': '13.03.2026', 'results': {'CDU': 28, 'SPD': 26, 'AfD': 19, 'FDP': 0, 'BSW': 0, 'Grüne': 9, 'FW': 5, 'Linke': 5, 'Sonstige': 8}},
-    {'date': '12.03.2026', 'results': {'CDU': 29, 'SPD': 28, 'AfD': 19, 'FDP': 0, 'BSW': 0, 'Grüne': 8, 'FW': 4.5, 'Linke': 5, 'Sonstige': 6.5}}
+	{'date': '23.03.2026', 'type': 'E', 'results': {'CDU': 31, 'SPD': 25.9, 'AfD': 19.5, 'FDP': 2.1, 'BSW': 1.9, 'Grüne': 7.9, 'FW': 4.2, 'Linke': 4.4, 'Sonstige': 3.2}},
+    {'date': '18.03.2026', 'type': 'U', 'results': {'CDU': 28, 'SPD': 27, 'AfD': 20, 'FDP': 0, 'BSW': 0, 'Grüne': 9, 'FW': 5, 'Linke': 5, 'Sonstige': 6}},
+    {'date': '13.03.2026', 'type': 'U', 'results': {'CDU': 28, 'SPD': 26, 'AfD': 19, 'FDP': 0, 'BSW': 0, 'Grüne': 9, 'FW': 5, 'Linke': 5, 'Sonstige': 8}},
+    {'date': '12.03.2026', 'type': 'U', 'results': {'CDU': 29, 'SPD': 28, 'AfD': 19, 'FDP': 0, 'BSW': 0, 'Grüne': 8, 'FW': 4.5, 'Linke': 5, 'Sonstige': 6.5}}
   ]
 }, 
 'Saarland': {
@@ -1274,9 +1227,9 @@ const data = {
   'lastElection': {'results': {'CDU': 28.5, 'SPD': 43.5, 'AfD': 5.7, 'FDP': 4.0, 'BSW': 0, 'Grüne': 5.1, 'Linke': 6.5, 'Sonstige': 6.7}},
   'results': {'CDU': 25, 'SPD': 27, 'AfD': 23, 'FDP': 0, 'BSW': 3, 'Grüne': 7, 'Linke': 7, 'Sonstige': 8},
   'history': [
-    {'date': '02.04.2025', 'results': {'CDU': 27, 'SPD': 30, 'AfD': 17, 'FDP': 3, 'BSW': 4, 'Grüne': 6, 'Linke': 8, 'Sonstige': 5}},
-    {'date': '26.09.2024', 'results': {'CDU': 31, 'SPD': 29, 'AfD': 14, 'FDP': 0, 'BSW': 10, 'Grüne': 5, 'Linke': 0, 'Sonstige': 11}},
-    {'date': '04.05.2024', 'results': {'CDU': 28, 'SPD': 36, 'AfD': 8.5, 'FDP': 3.5, 'BSW': 9, 'Grüne': 5, 'Linke': 2, 'Sonstige': 8}}
+    {'date': '02.04.2025', 'type': 'U', 'results': {'CDU': 27, 'SPD': 30, 'AfD': 17, 'FDP': 3, 'BSW': 4, 'Grüne': 6, 'Linke': 8, 'Sonstige': 5}},
+    {'date': '26.09.2024', 'type': 'U', 'results': {'CDU': 31, 'SPD': 29, 'AfD': 14, 'FDP': 0, 'BSW': 10, 'Grüne': 5, 'Linke': 0, 'Sonstige': 11}},
+    {'date': '04.05.2024', 'type': 'U', 'results': {'CDU': 28, 'SPD': 36, 'AfD': 8.5, 'FDP': 3.5, 'BSW': 9, 'Grüne': 5, 'Linke': 2, 'Sonstige': 8}}
   ]
 }, 
 'Sachsen': {
@@ -1285,9 +1238,9 @@ const data = {
   'lastElection': {'results': {'CDU': 31.9, 'SPD': 7.3, 'AfD': 30.6, 'FDP': 0, 'BSW': 11.8, 'Grüne': 5.1, 'Linke': 4.5, 'Sonstige': 8.8}},
   'results': {'CDU': 21, 'SPD': 6, 'AfD': 42, 'FDP': 0, 'BSW': 7, 'Grüne': 6, 'Linke': 9, 'Sonstige': 9},
   'history': [
-    {'date': '10.05.2026', 'results': {'CDU': 30, 'SPD': 4, 'AfD': 36, 'FDP': 1, 'BSW': 8, 'Grüne': 5.5, 'Linke': 10.5, 'Sonstige': 4}},
-    {'date': '06.01.2026', 'results': {'CDU': 29, 'SPD': 6, 'AfD': 35, 'FDP': 1, 'BSW': 8, 'Grüne': 6, 'Linke': 10, 'Sonstige': 5}},
-    {'date': '04.08.2025', 'results': {'CDU': 27, 'SPD': 6, 'AfD': 35, 'FDP': 1, 'BSW': 9, 'Grüne': 6, 'Linke': 10, 'Sonstige': 6}}
+    {'date': '10.05.2026', 'type': 'U', 'results': {'CDU': 30, 'SPD': 4, 'AfD': 36, 'FDP': 1, 'BSW': 8, 'Grüne': 5.5, 'Linke': 10.5, 'Sonstige': 4}},
+    {'date': '06.01.2026', 'type': 'U', 'results': {'CDU': 29, 'SPD': 6, 'AfD': 35, 'FDP': 1, 'BSW': 8, 'Grüne': 6, 'Linke': 10, 'Sonstige': 5}},
+    {'date': '04.08.2025', 'type': 'U', 'results': {'CDU': 27, 'SPD': 6, 'AfD': 35, 'FDP': 1, 'BSW': 9, 'Grüne': 6, 'Linke': 10, 'Sonstige': 6}}
   ]
 }, 
 'Sachsen-Anhalt': {
@@ -1296,13 +1249,13 @@ const data = {
   'lastElection': {'results': {'CDU': 37.1, 'SPD': 8.4, 'AfD': 20.8, 'FDP': 0, 'BSW': 0, 'Grüne': 5.9, 'Linke': 11.0, 'Sonstige': 16.8}},
   'results': {'CDU': 23, 'SPD': 6.7, 'AfD': 42, 'FDP': 3, 'BSW': 4.3, 'Grüne': 4.7, 'Linke': 13, 'Sonstige': 4.3},
   'history': [
-	{'date': '10.08.2026', 'results': {'CDU': 23.3, 'SPD': 6, 'AfD': 41.3, 'FDP': 4, 'BSW': 4.3, 'Grüne': 4.3, 'Linke': 13.3, 'Sonstige': 4.7}},
-	{'date': '30.07.2026', 'results': {'CDU': 23.7, 'SPD': 6, 'AfD': 41, 'FDP': 4, 'BSW': 4.3, 'Grüne': 4.3, 'Linke': 13.3, 'Sonstige': 4.7}},
-	{'date': '23.07.2026', 'results': {'CDU': 23.7, 'SPD': 5.7, 'AfD': 41.3, 'FDP': 3.7, 'BSW': 4.3, 'Grüne': 4, 'Linke': 13.3, 'Sonstige': 4}},
-	{'date': '03.07.2026', 'results': {'CDU': 24.3, 'SPD': 6.3, 'AfD': 41.3, 'FDP': 3.5, 'BSW': 4.3, 'Grüne': 4, 'Linke': 12.7, 'Sonstige': 4.7}},
-    {'date': '13.05.2026', 'results': {'CDU': 25, 'SPD': 6.3, 'AfD': 40.3, 'FDP': 3, 'BSW': 4.3, 'Grüne': 4, 'Linke': 12.7, 'Sonstige': 5.3}},
-    {'date': '07.05.2026', 'results': {'CDU': 25.7, 'SPD': 7, 'AfD': 39.3, 'FDP': 2.5, 'BSW': 5, 'Grüne': 3.7, 'Linke': 12, 'Sonstige': 5.7}},
-    {'date': '25.03.2026', 'results': {'CDU': 25.7, 'SPD': 6.7, 'AfD': 39, 'FDP': 2.7, 'BSW': 5.7, 'Grüne': 3.3, 'Linke': 11.7, 'Sonstige': 5.3}}
+	{'date': '10.08.2026', 'type': 'U', 'results': {'CDU': 23.3, 'SPD': 6, 'AfD': 41.3, 'FDP': 4, 'BSW': 4.3, 'Grüne': 4.3, 'Linke': 13.3, 'Sonstige': 4.7}},
+	{'date': '30.07.2026', 'type': 'U', 'results': {'CDU': 23.7, 'SPD': 6, 'AfD': 41, 'FDP': 4, 'BSW': 4.3, 'Grüne': 4.3, 'Linke': 13.3, 'Sonstige': 4.7}},
+	{'date': '23.07.2026', 'type': 'U', 'results': {'CDU': 23.7, 'SPD': 5.7, 'AfD': 41.3, 'FDP': 3.7, 'BSW': 4.3, 'Grüne': 4, 'Linke': 13.3, 'Sonstige': 4}},
+	{'date': '03.07.2026', 'type': 'U', 'results': {'CDU': 24.3, 'SPD': 6.3, 'AfD': 41.3, 'FDP': 3.5, 'BSW': 4.3, 'Grüne': 4, 'Linke': 12.7, 'Sonstige': 4.7}},
+    {'date': '13.05.2026', 'type': 'U', 'results': {'CDU': 25, 'SPD': 6.3, 'AfD': 40.3, 'FDP': 3, 'BSW': 4.3, 'Grüne': 4, 'Linke': 12.7, 'Sonstige': 5.3}},
+    {'date': '07.05.2026', 'type': 'U', 'results': {'CDU': 25.7, 'SPD': 7, 'AfD': 39.3, 'FDP': 2.5, 'BSW': 5, 'Grüne': 3.7, 'Linke': 12, 'Sonstige': 5.7}},
+    {'date': '25.03.2026', 'type': 'U', 'results': {'CDU': 25.7, 'SPD': 6.7, 'AfD': 39, 'FDP': 2.7, 'BSW': 5.7, 'Grüne': 3.3, 'Linke': 11.7, 'Sonstige': 5.3}}
   ]
 }, 
 'Schleswig-Holstein': {
@@ -1311,10 +1264,10 @@ const data = {
   'lastElection': {'results': {'CDU': 43.4, 'SPD': 16.0, 'AfD': 5.3, 'FDP': 6.4, 'BSW': 0, 'Grüne': 18.3, 'Linke': 1.7, 'Sonstige': 8.9}},
   'results': {'CDU': 27, 'SPD': 15, 'AfD': 18, 'FDP': 6, 'BSW': 0, 'Grüne': 17, 'Linke': 7, 'Sonstige': 10},
   'history': [
-	{'date': '16.04.2026', 'results': {'CDU': 33, 'SPD': 12, 'AfD': 15, 'FDP': 4, 'BSW': 0, 'Grüne': 19, 'Linke': 6, 'Sonstige': 11}},
-    {'date': '22.01.2025', 'results': {'CDU': 39, 'SPD': 16, 'AfD': 14, 'FDP': 4, 'BSW': 3, 'Grüne': 13, 'Linke': 0, 'Sonstige': 11}},
-    {'date': '15.11.2023', 'results': {'CDU': 40, 'SPD': 15, 'AfD': 12, 'FDP': 6, 'BSW': 0, 'Grüne': 16, 'Linke': 0, 'Sonstige': 11}},
-    {'date': '02.10.2023', 'results': {'CDU': 32.5, 'SPD': 14, 'AfD': 15, 'FDP': 5, 'BSW': 0, 'Grüne': 18, 'Linke': 1.5, 'Sonstige': 14}}
+	{'date': '16.04.2026', 'type': 'U', 'results': {'CDU': 33, 'SPD': 12, 'AfD': 15, 'FDP': 4, 'BSW': 0, 'Grüne': 19, 'Linke': 6, 'Sonstige': 11}},
+    {'date': '22.01.2025', 'type': 'U', 'results': {'CDU': 39, 'SPD': 16, 'AfD': 14, 'FDP': 4, 'BSW': 3, 'Grüne': 13, 'Linke': 0, 'Sonstige': 11}},
+    {'date': '15.11.2023', 'type': 'U', 'results': {'CDU': 40, 'SPD': 15, 'AfD': 12, 'FDP': 6, 'BSW': 0, 'Grüne': 16, 'Linke': 0, 'Sonstige': 11}},
+    {'date': '02.10.2023', 'type': 'U', 'results': {'CDU': 32.5, 'SPD': 14, 'AfD': 15, 'FDP': 5, 'BSW': 0, 'Grüne': 18, 'Linke': 1.5, 'Sonstige': 14}}
   ]
 }, 
 'Thüringen': {
@@ -1323,11 +1276,35 @@ const data = {
   'lastElection': {'results': {'CDU': 31.4, 'SPD': 6.1, 'AfD': 23.4, 'FDP': 0, 'BSW': 15.4, 'Grüne': 5.2, 'Linke': 13.1, 'Sonstige': 5.4}},
   'results': {'CDU': 22, 'SPD': 6, 'AfD': 40, 'FDP': 0, 'BSW': 7, 'Grüne': 4, 'Linke': 16, 'Sonstige': 5},
   'history': [
-    {'date': '10.04.2026', 'results': {'CDU': 24, 'SPD': 6, 'AfD': 39, 'FDP': 0, 'BSW': 7, 'Grüne': 3, 'Linke': 14, 'Sonstige': 7}},
-    {'date': '05.02.2026', 'results': {'CDU': 24, 'SPD': 7, 'AfD': 38, 'FDP': 0, 'BSW': 7, 'Grüne': 3, 'Linke': 14, 'Sonstige': 7}},
-    {'date': '11.12.2025', 'results': {'CDU': 24, 'SPD': 6, 'AfD': 39, 'FDP': 0, 'BSW': 7, 'Grüne': 3, 'Linke': 14, 'Sonstige': 7}}
+    {'date': '10.04.2026', 'type': 'U', 'results': {'CDU': 24, 'SPD': 6, 'AfD': 39, 'FDP': 0, 'BSW': 7, 'Grüne': 3, 'Linke': 14, 'Sonstige': 7}},
+    {'date': '05.02.2026', 'type': 'U', 'results': {'CDU': 24, 'SPD': 7, 'AfD': 38, 'FDP': 0, 'BSW': 7, 'Grüne': 3, 'Linke': 14, 'Sonstige': 7}},
+    {'date': '11.12.2025', 'type': 'U', 'results': {'CDU': 24, 'SPD': 6, 'AfD': 39, 'FDP': 0, 'BSW': 7, 'Grüne': 3, 'Linke': 14, 'Sonstige': 7}}
   ]
 }
+};
+
+// Aktuelle Landesregierungen — Partei-Keys müssen exakt den Keys in
+// `data[state].results` entsprechen (z.B. 'CSU' statt 'CDU' in Bayern).
+// Wird im Koalitionsrechner genutzt, um amtierende Koalitionen automatisch
+// als "Regierung" zu kennzeichnen.
+const governmentCoalitions = {
+  'Bundestag': ['CDU/CSU', 'SPD'],
+  'Baden-Württemberg': ['Grüne', 'CDU'],
+  'Bayern': ['CSU', 'FW'],
+  'Berlin': ['CDU', 'SPD'],
+  'Brandenburg': ['SPD', 'CDU'],
+  'Bremen': ['SPD', 'Grüne', 'Linke'],
+  'Hamburg': ['SPD', 'Grüne'],
+  'Hessen': ['CDU', 'SPD'],
+  'Mecklenburg-Vorpommern': ['SPD', 'Linke'],
+  'Niedersachsen': ['SPD', 'Grüne'],
+  'Nordrhein-Westfalen': ['CDU', 'Grüne'],
+  'Rheinland-Pfalz': ['CDU', 'SPD'],
+  'Saarland': ['SPD'],
+  'Sachsen': ['CDU', 'SPD'],
+  'Sachsen-Anhalt': ['CDU', 'SPD', 'FDP'],
+  'Schleswig-Holstein': ['CDU', 'Grüne'],
+  'Thüringen': ['CDU', 'BSW', 'SPD']
 };
 
 let currentState = null;
@@ -1477,25 +1454,158 @@ function renderTrendChart(container, points) {
   const endX = xFor(n - 1);
   labelPositions.forEach(lp => {
     svg += `<circle cx="${(endX + 8).toFixed(1)}" cy="${lp.y.toFixed(1)}" r="4.2" fill="${lp.color}" stroke="#0d1117" stroke-width="1.5"/>`;
-    svg += `<text x="${(endX + 16).toFixed(1)}" y="${(lp.y + 4).toFixed(1)}" font-size="12" font-weight="700" fill="${lp.color}">${lp.party} ${lp.value.toFixed(1)}</text>`;
+    svg += `<text x="${(endX + 16).toFixed(1)}" y="${(lp.y + 4).toFixed(1)}" font-size="12" font-weight="700" fill="${readableTextColor(lp.color)}">${lp.party} ${lp.value.toFixed(1)}</text>`;
   });
 
   svg += `</svg>`;
   container.innerHTML = svg;
 }
 
+function renderDiagramMeta(name, points) {
+  const meta = document.getElementById("diagramMeta");
+  meta.innerHTML = "";
+
+  const n = points.length;
+  const first = points[0];
+  const last = points[n - 1];
+  const leader = getLeadingParty(last.results);
+
+  const chips = [
+    { label: 'Umfragen', value: n + (n === 1 ? ' Umfrage' : ' Umfragen') },
+    { label: n > 1 ? 'Zeitraum' : 'Stand', value: n > 1 ? (first.dateStr + ' – ' + last.dateStr) : last.dateStr },
+    { label: 'Führend aktuell', value: leader ? (leader + ' · ' + last.results[leader] + '%') : '–', leader: true }
+  ];
+
+  chips.forEach(c => {
+    const chip = document.createElement("div");
+    chip.className = "diagram-meta-chip" + (c.leader ? " leader" : "");
+    chip.innerHTML = `<span class="label">${c.label}</span><span class="value">${c.value}</span>`;
+    meta.appendChild(chip);
+  });
+}
+
+function renderDiagramLegend(points) {
+  const legend = document.getElementById("diagramLegend");
+  legend.innerHTML = "";
+  if(points.length < 1) return;
+
+  const first = points[0];
+  const last = points[points.length - 1];
+
+  const partySet = new Set();
+  points.forEach(pt => Object.keys(pt.results || {}).forEach(p => {
+    if((pt.results[p] || 0) > 0) partySet.add(p);
+  }));
+
+  const items = Array.from(partySet).map(p => {
+    const now = last.results[p] || 0;
+    const before = first.results[p] || 0;
+    const diff = now - before;
+    return { party: p, value: now, diff };
+  }).sort((a, b) => b.value - a.value);
+
+  items.forEach(it => {
+    const el = document.createElement("div");
+    el.className = "diagram-legend-item";
+    let trendText = '±0';
+    let trendClass = 'same';
+    if(points.length > 1) {
+      if(it.diff > 0.05) { trendText = '+' + it.diff.toFixed(1); trendClass = 'up'; }
+      else if(it.diff < -0.05) { trendText = it.diff.toFixed(1); trendClass = 'down'; }
+    } else {
+      trendText = '';
+    }
+    el.innerHTML = `<span class="diagram-legend-dot" style="background:${colors[it.party] || '#888'}"></span>
+      <span class="diagram-legend-party">${it.party}</span>
+      <span class="diagram-legend-value">${it.value.toFixed(1)}%</span>
+      ${trendText ? `<span class="diagram-legend-trend ${trendClass}">${trendText}</span>` : ''}`;
+    legend.appendChild(el);
+  });
+}
+
+// ========== DIAGRAM TIME-RANGE FILTER ==========
+let diagramState = { name: '', points: [], range: 'all' };
+
+const DIAGRAM_RANGES = [
+  { key: '1m', label: '1M', months: 1 },
+  { key: '3m', label: '3M', months: 3 },
+  { key: '6m', label: '6M', months: 6 },
+  { key: '1y', label: '1 Jahr', months: 12 },
+  { key: 'all', label: 'Alle', months: null }
+];
+
+function filterPointsByRange(points, rangeKey) {
+  if(rangeKey === 'all' || points.length < 2) return points;
+  const range = DIAGRAM_RANGES.find(r => r.key === rangeKey);
+  if(!range || !range.months) return points;
+  const cutoff = new Date(points[points.length - 1].dateObj);
+  cutoff.setMonth(cutoff.getMonth() - range.months);
+  const filtered = points.filter(p => p.dateObj >= cutoff);
+  // Always keep at least 2 points so the chart stays meaningful
+  return filtered.length >= 2 ? filtered : points.slice(-2);
+}
+
+// Zeigt IMMER alle Zeitraum-Tabs (1M/3M/6M/1 Jahr/Alle) an, egal wie kurz
+// die tatsächlich vorhandene Umfrage-Historie eines Bundeslandes ist —
+// vorher wurden Tabs komplett ausgeblendet, wenn die Spanne zu kurz war
+// (z.B. Baden-Württemberg mit nur ~7 Wochen Historie), was wie ein Bug
+// aussah. filterPointsByRange() fällt bei zu wenig Daten im gewählten
+// Zeitraum ohnehin auf die letzten 2 Punkte zurück.
+function renderDiagramRangeTabs(points) {
+  const tabs = document.getElementById("diagramRangeTabs");
+  tabs.innerHTML = "";
+
+  if(points.length < 2) return; // nur ein einziger Datenpunkt — kein Zeitraum zum Filtern
+
+  DIAGRAM_RANGES.forEach(r => {
+    const btn = document.createElement("button");
+    btn.className = "diagram-range-btn" + (r.key === diagramState.range ? " active" : "");
+    btn.textContent = r.label;
+    btn.dataset.range = r.key;
+    btn.onclick = () => setDiagramRange(r.key);
+    tabs.appendChild(btn);
+  });
+}
+
+function setDiagramRange(rangeKey) {
+  diagramState.range = rangeKey;
+  document.querySelectorAll('.diagram-range-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.range === rangeKey);
+  });
+
+  const filtered = filterPointsByRange(diagramState.points, rangeKey);
+  const rangeLabel = DIAGRAM_RANGES.find(r => r.key === rangeKey);
+
+  document.getElementById("diagramModalSubtitle").textContent =
+    diagramState.points.length > 1
+      ? (rangeKey === 'all'
+          ? `Wie sich die Parteien in ${diagramState.name} seit ${filtered[0].dateStr} entwickelt haben`
+          : `Wie sich die Parteien in ${diagramState.name} in den letzten ${rangeLabel.label} entwickelt haben`)
+      : `Noch keine frühere Umfrage für ${diagramState.name} vorhanden — sobald weitere Werte veröffentlicht werden, entsteht hier ein Verlauf.`;
+
+  renderDiagramMeta(diagramState.name, filtered);
+  const wrap = document.getElementById("diagramChartWrap");
+  renderTrendChart(wrap, filtered);
+  renderDiagramLegend(filtered);
+}
+
 function openDiagramModal(name, currentDate, currentResults, historyArr) {
   const points = buildTimeline(currentDate, currentResults, historyArr);
-  document.getElementById("diagramModalTitle").textContent = "Umfragetrend – " + name;
-  const wrap = document.getElementById("diagramChartWrap");
-  renderTrendChart(wrap, points);
+  diagramState = { name, points, range: 'all' };
+
+  document.getElementById("diagramModalTitle").textContent = "Umfragen-Verlauf";
+  renderDiagramRangeTabs(points);
+  setDiagramRange('all');
+
   document.getElementById("diagramModal").classList.add('active');
   document.body.style.overflow = 'hidden';
+  document.body.classList.add('modal-open');
 }
 
 function closeDiagramModal() {
   document.getElementById("diagramModal").classList.remove('active');
   document.body.style.overflow = '';
+  document.body.classList.remove('modal-open');
 }
 
 function parseDate(dateStr) {
@@ -1621,14 +1731,21 @@ function buildStates(){
     
     // Add "Neue Umfrage" badge at bottom if this has the newest date
     // Always show badge for election states, or if newest poll
-    if(data[s].isElection === true || data[s].date === newest.dateString) {
+    const upcomingElection = getUpcomingElectionForState(s);
+    if(data[s].isElection === true || data[s].date === newest.dateString || upcomingElection) {
       const badgeContainer = document.createElement("div");
       badgeContainer.className = "badge-container";
-      const badge = document.createElement("span");
-      badge.className = "new-badge";
-      badge.textContent = data[s].isElection === true ? "Ergebnis" : "Neue Umfrage";
-      if(data[s].isElection === true) badge.style.background = "#4f7fa8";
-      badgeContainer.appendChild(badge);
+      if(data[s].isElection === true || data[s].date === newest.dateString) {
+        const badge = document.createElement("span");
+        badge.className = "new-badge";
+        badge.textContent = data[s].isElection === true ? "Ergebnis" : "Neue Umfrage";
+        if(data[s].isElection === true) badge.style.background = "#4f7fa8";
+        badgeContainer.appendChild(badge);
+      }
+      // Live D/H/M countdown — only rendered once the vote is 30 days out or less.
+      if(upcomingElection) {
+        badgeContainer.appendChild(renderCountdownChip(upcomingElection.dt));
+      }
       d.appendChild(badgeContainer);
     }
     
@@ -1637,195 +1754,16 @@ function buildStates(){
 }
 
 function showState(state){
-  // Check if mobile (screen width <= 1024px)
-  const isMobile = window.innerWidth <= 1024;
-  
-  if(isMobile) {
-    // Mobile: Open modal instead
-    openStateModal(state);
-    return;
-  }
-  
-  // Desktop: Original behavior
-  // Update active state
+  // Opens the state detail inline, in the same view — same pattern as Städte.
   if(currentState) {
-    const prevStates = document.querySelectorAll('.state');
-    prevStates.forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
   }
   currentState = state;
-  const states = document.querySelectorAll('.state');
-  states.forEach((s) => {
-    // Check if this state div's text matches the current state
+  document.querySelectorAll('.state').forEach((s) => {
     const stateName = s.querySelector('.state-name').textContent;
-    if(stateName === state) {
-      s.classList.add('active');
-    }
+    if(stateName === state) s.classList.add('active');
   });
-
-  // Update background coat of arms
-  const panel = document.querySelector('.panel');
-  panel.style.setProperty('--bg-coat', `url(${stateCoats[state]})`);
-
-  const bars=document.getElementById("bars");
-  bars.innerHTML="";
-  const isElection = data[state].isElection === true;
-  document.getElementById("title").innerText = state + (isElection ? ' \u2013 Ergebnis' : '');
-  document.getElementById("date").innerText = (isElection ? 'Ergebnis: ' : 'Stand: ') + data[state].date;
-  
-  // Calculate trends: use lastElection if isElection=true, else history[0]
-  const currentResults = data[state].results;
-  const le = data[state].lastElection;
-  const previousResults = (isElection && le && Object.keys(le.results||{}).length > 0)
-    ? le.results
-    : (data[state].history[0] ? data[state].history[0].results : {});
-  
-  let entries=Object.entries(currentResults).sort((a,b)=>{
-    // Always put Sonstige last
-    if(a[0] === 'Sonstige') return 1;
-    if(b[0] === 'Sonstige') return -1;
-    // Sort others by percentage descending
-    return b[1]-a[1];
-  });
-  entries.forEach(([p,v], index)=>{
-    if(v === 0) return;
-    const r=document.createElement("div");
-    r.className="bar-row";
-    
-    const logo=document.createElement("img");
-    logo.src=logos[p];
-    logo.className="party-logo";
-    logo.alt=p+" Logo";
-    
-    const b=document.createElement("div");
-    b.className="bar";
-    // Responsive scaling based on screen width
-    const screenWidth = window.innerWidth;
-    let scaleFactor;
-    
-    if (screenWidth <= 480) {
-      // Very small phones: 5px per %
-      scaleFactor = 5;
-    } else if (screenWidth <= 768) {
-      // Small tablets/large phones: 8px per %
-      scaleFactor = 8;
-    } else {
-      // Desktop: 15px per %
-      scaleFactor = 15;
-    }
-    
-    // Pure proportional scaling - no minimum to show true differences
-    const targetWidth = v > 0 ? (v * scaleFactor) + "px" : "0px";
-    b.style.background=colors[p];
-    b.style.color = (p==="FDP" ? "#000" : "#fff");
-    b.textContent = p;
-    
-    // Calculate exact percentage difference
-    const prevValue = previousResults[p] || 0;
-    const diff = v - prevValue;
-    let trendText = '';
-    let trendClass = 'same';
-    
-    if(diff > 0) { 
-      trendText = '+' + diff.toFixed(1) + '%'; 
-      trendClass = 'up'; 
-    } else if(diff < 0) { 
-      trendText = diff.toFixed(1) + '%'; 
-      trendClass = 'down'; 
-    } else {
-      trendText = '±0%';
-    }
-    
-    // Trigger animation with delay
-    setTimeout(() => {
-      b.classList.add('animate');
-      b.style.width = targetWidth;
-    }, index * 100);
-    
-    const pc=document.createElement("div");
-    pc.className="percent";
-    const trendTitle = isElection ? 'Veraenderung zur letzten Wahl' : '';
-    pc.innerHTML = v+'% <span class="trend '+trendClass+'" title="'+trendTitle+'">'+trendText+'</span>';
-    
-    r.appendChild(logo);
-    r.appendChild(b);
-    r.appendChild(pc);
-    bars.appendChild(r);
-  });
-
-  // Show change label when isElection
-  if(isElection) {
-    const changeLabel = document.createElement("div");
-    changeLabel.style.cssText = "font-size:11px;color:#888;margin-bottom:0.5rem;margin-top:-0.3rem;text-align:right;padding-right:4px;";
-    changeLabel.textContent = "± Veränderung zur letzten Wahl";
-    bars.insertBefore(changeLabel, bars.firstChild);
-  }
-  
-  // Add seats button after bars
-  const seatsBtn = document.createElement("button");
-  seatsBtn.className = "seats-btn";
-  seatsBtn.textContent = "Sitzverteilung/Koalitionen";
-  seatsBtn.onclick = () => openSeatsModal(state, currentResults);
-  bars.appendChild(seatsBtn);
-
-  // Add diagram button
-  const diagramBtn = document.createElement("button");
-  diagramBtn.className = "diagram-btn";
-  diagramBtn.textContent = "📈 Diagramm";
-  diagramBtn.onclick = () => openDiagramModal(state, data[state].date, currentResults, data[state].history);
-  bars.appendChild(diagramBtn);
-  
-  // Display historical data
-  const historyDiv = document.getElementById("history");
-  historyDiv.innerHTML = "";
-  
-  // Update history heading
-  const historyHeading = document.querySelector('.panel .history-section h3');
-  if(historyHeading) historyHeading.textContent = 'Frühere Umfragen';
-
-
-
-  data[state].history.slice(0, 3).forEach(h => {
-    const row = document.createElement("div");
-    row.className = "history-row";
-    
-    const dateDiv = document.createElement("div");
-    dateDiv.className = "history-date";
-    dateDiv.textContent = h.date;
-    row.appendChild(dateDiv);
-    
-    const partiesDiv = document.createElement("div");
-    partiesDiv.className = "history-parties";
-    
-    // Sort parties by their historical percentages, but always put Sonstige last
-    const historicalEntries = Object.entries(h.results).sort((a,b)=>{
-      // Always put Sonstige last
-      if(a[0] === 'Sonstige') return 1;
-      if(b[0] === 'Sonstige') return -1;
-      // Sort others by percentage descending
-      return b[1]-a[1];
-    });
-    historicalEntries.forEach(([p, v]) => {
-      if(v > 0) {
-        const partyDiv = document.createElement("div");
-        partyDiv.className = "history-party";
-        
-        const nameDiv = document.createElement("div");
-        nameDiv.className = "history-party-name";
-        nameDiv.textContent = p;
-        
-        const valueDiv = document.createElement("div");
-        valueDiv.className = "history-party-value";
-        valueDiv.textContent = v + "%";
-        
-        partyDiv.appendChild(nameDiv);
-        partyDiv.appendChild(valueDiv);
-        partiesDiv.appendChild(partyDiv);
-      }
-    });
-    
-    row.appendChild(partiesDiv);
-    historyDiv.appendChild(row);
-  });
+  showLanderStats(state);
 }
 
 function showBundestag() {
@@ -1865,7 +1803,7 @@ function showBundestag() {
   // Add diagram button
   const bundestagDiagramBtn = document.createElement("button");
   bundestagDiagramBtn.className = "diagram-btn";
-  bundestagDiagramBtn.textContent = "📈 Diagramm";
+  bundestagDiagramBtn.textContent = "📈 Verlauf";
   bundestagDiagramBtn.onclick = () => openDiagramModal('Bundestag', bundestagData.date, bundestagData.results, bundestagData.history);
   badgeContainer.appendChild(bundestagDiagramBtn);
   
@@ -1959,6 +1897,204 @@ const elections2026 = [
   { state: 'Niedersachsen', type: 'Landtag', date: '26.09.2027' }
 ];
 
+function daysUntil(dateStr) {
+  const target = parseDateSafe(dateStr);
+  if(!target) return null;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  target.setHours(0,0,0,0);
+  return Math.round((target - today) / 86400000);
+}
+
+// ========== LIVE VOTE COUNTDOWNS ==========
+// Polls always open at 08:00 *Berlin* time on election day, regardless of
+// the visitor's own timezone — so we resolve the correct UTC instant for
+// "08:00 Europe/Berlin" (handling the CET/CEST switch) rather than just
+// using the browser's local time.
+function getBerlinOffsetMinutes(date) {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Berlin', hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+  const p = {};
+  dtf.formatToParts(date).forEach(part => { if(part.type !== 'literal') p[part.type] = part.value; });
+  let hour = parseInt(p.hour, 10);
+  if(hour === 24) hour = 0; // some locales report midnight as 24
+  const asUTC = Date.UTC(p.year, p.month - 1, p.day, hour, p.minute, p.second);
+  return Math.round((asUTC - date.getTime()) / 60000);
+}
+
+function getElectionDateTime(dateStr) {
+  if(!dateStr) return null;
+  const parts = dateStr.split('.');
+  if(parts.length !== 3 || dateStr.includes('X')) return null;
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10);
+  const year = parseInt(parts[2], 10);
+  // First guess treats 08:00 as UTC, then we correct by Berlin's actual
+  // offset at that instant (1h in winter/CET, 2h in summer/CEST).
+  const guessUTC = Date.UTC(year, month - 1, day, 8, 0, 0);
+  const offsetMinutes = getBerlinOffsetMinutes(new Date(guessUTC));
+  return new Date(guessUTC - offsetMinutes * 60000);
+}
+
+// Returns {days, hours, minutes} remaining until target, or null if the
+// target has already passed. Comparing two absolute instants like this is
+// timezone-agnostic — Date.now() and our Berlin-resolved target both point
+// at the same moment in time no matter where the visitor is.
+function getCountdownParts(target) {
+  const diff = target - new Date();
+  if(diff <= 0) return null;
+  const totalMinutes = Math.floor(diff / 60000);
+  return {
+    days: Math.floor(totalMinutes / 1440),
+    hours: Math.floor((totalMinutes % 1440) / 60),
+    minutes: totalMinutes % 60
+  };
+}
+
+// Finds the nearest upcoming election for a given state. Shows the chip
+// starting 30 days out, keeps it through "Wahltag" (polls open, then
+// counting), and lets it fade away ~24h after polls opened — by then the
+// data maintainer should have flipped the entry over to a real result.
+// Kommunalwahlen (local/municipal elections) are excluded — they still
+// get their own countdown on the Wahlen tab, but don't get a chip on the
+// Länder state cards since they aren't state-level (Landtag) votes.
+function getUpcomingElectionForState(stateName) {
+  const now = new Date();
+  let best = null;
+  elections2026.forEach(e => {
+    if(e.state !== stateName) return;
+    if(e.type === 'Kommunalwahl') return;
+    const dt = getElectionDateTime(e.date);
+    if(!dt) return;
+    const diffDays = (dt - now) / 86400000;
+    const hoursSinceOpen = (now - dt) / 3600000;
+    if(diffDays <= 30 && hoursSinceOpen <= 24) {
+      if(!best || dt < best.dt) best = Object.assign({}, e, { dt });
+    }
+  });
+  return best;
+}
+
+// ===== "Wahltag" mode =====
+// Polls open at the resolved target (08:00 Berlin) and close 10 hours
+// later (18:00 Berlin, same calendar day — safe to add in UTC since the
+// Berlin/UTC offset doesn't change again within that window).
+// Phases: 'upcoming' (still counting down) -> 'open' (voting, pulsing
+// "Wahllokale geöffnet") -> 'counting' ("Auszählung läuft" once polls close).
+function getVotePhase(openTarget) {
+  const now = new Date();
+  if(now < openTarget) return 'upcoming';
+  const closeTarget = new Date(openTarget.getTime() + 10 * 3600000);
+  if(now < closeTarget) return 'open';
+  return 'counting';
+}
+
+// Compact chip used in the Länder list, e.g. "4T 12Std 30Min".
+function renderCountdownChip(target) {
+  const chip = document.createElement('span');
+  chip.className = 'countdown-chip';
+  chip.dataset.countdownTarget = target.getTime();
+  updateCountdownChip(chip);
+  return chip;
+}
+
+function updateCountdownChip(chip) {
+  const target = new Date(Number(chip.dataset.countdownTarget));
+  const phase = getVotePhase(target);
+  chip.classList.remove('is-open', 'is-counting');
+  if(phase === 'upcoming') {
+    const parts = getCountdownParts(target);
+    chip.textContent = `${parts.days}T ${parts.hours}Std ${parts.minutes}Min`;
+  } else if(phase === 'open') {
+    chip.textContent = 'Wahllokale geöffnet';
+    chip.classList.add('is-open');
+  } else {
+    chip.textContent = 'Auszählung läuft';
+    chip.classList.add('is-counting');
+  }
+}
+
+// Larger D/H/M block used in the Wahlen (elections) tab.
+function renderCountdownLive(target) {
+  const wrap = document.createElement('div');
+  wrap.className = 'election-countdown-live';
+  wrap.dataset.countdownTarget = target.getTime();
+  updateCountdownLive(wrap);
+  return wrap;
+}
+
+function updateCountdownLive(wrap) {
+  const target = new Date(Number(wrap.dataset.countdownTarget));
+  const phase = getVotePhase(target);
+  if(phase === 'upcoming') {
+    const parts = getCountdownParts(target);
+    wrap.innerHTML = `
+      <div class="cd-unit"><div class="cd-val">${parts.days}</div><div class="cd-label">Tage</div></div>
+      <div class="cd-unit"><div class="cd-val">${parts.hours}</div><div class="cd-label">Std</div></div>
+      <div class="cd-unit"><div class="cd-val">${parts.minutes}</div><div class="cd-label">Min</div></div>
+    `;
+  } else if(phase === 'open') {
+    wrap.innerHTML = '<div class="cd-phase cd-phase-open"><span class="cd-phase-dot"></span>Wahllokale geöffnet</div>';
+  } else {
+    wrap.innerHTML = '<div class="cd-phase cd-phase-counting"><span class="cd-phase-dot"></span>Auszählung läuft</div>';
+  }
+}
+
+// "in X Tagen" / "in X Monaten" text used for elections further than 30
+// days out — also self-updating, so the day count ticks down on its own
+// as time passes instead of freezing at page-load value.
+function renderCountdownText(target) {
+  const el = document.createElement('div');
+  el.className = 'election-countdown';
+  el.dataset.countdownTarget = target.getTime();
+  updateCountdownText(el);
+  return el;
+}
+
+function updateCountdownText(el) {
+  const target = new Date(Number(el.dataset.countdownTarget));
+  const parts = getCountdownParts(target);
+  if(!parts) { el.textContent = 'Wahl vorbei'; return; }
+  el.textContent = formatCountdown(parts.days);
+}
+
+// Live D/H/M (or Wahltag phase text) spliced into the ticker marquee.
+function updateTickerCountdown(el) {
+  const target = new Date(Number(el.dataset.countdownTarget));
+  const phase = getVotePhase(target);
+  if(phase === 'upcoming') {
+    const parts = getCountdownParts(target);
+    el.textContent = `${parts.days}T ${parts.hours}Std ${parts.minutes}Min`;
+  } else if(phase === 'open') {
+    el.textContent = 'Wahllokale geöffnet';
+  } else {
+    el.textContent = 'Auszählung läuft';
+  }
+}
+
+// Keeps every live countdown on the page in sync, once a minute.
+function tickAllCountdowns() {
+  document.querySelectorAll('.countdown-chip[data-countdown-target]').forEach(updateCountdownChip);
+  document.querySelectorAll('.election-countdown-live[data-countdown-target]').forEach(updateCountdownLive);
+  document.querySelectorAll('.election-countdown[data-countdown-target]').forEach(updateCountdownText);
+  document.querySelectorAll('.ticker-live-countdown[data-countdown-target]').forEach(updateTickerCountdown);
+}
+setInterval(tickAllCountdowns, 60000);
+
+function formatCountdown(days) {
+  if(days === null) return '';
+  if(days < 0) return 'Wahl vorbei';
+  if(days === 0) return 'Heute';
+  if(days > 30) {
+    const months = Math.round(days / 30);
+    return 'in ' + months + (months === 1 ? ' Monat' : ' Monaten');
+  }
+  return 'in ' + days + (days === 1 ? ' Tag' : ' Tagen');
+}
+
 function displayElections() {
   const container = document.getElementById('elections-2026');
   container.innerHTML = '';
@@ -1986,6 +2122,18 @@ function displayElections() {
     const electionDate = document.createElement('div');
     electionDate.className = 'election-date';
     electionDate.textContent = election.date;
+
+    const electionDT = getElectionDateTime(election.date);
+    const withinMonth = electionDT && (electionDT - new Date()) / 86400000 <= 30;
+
+    if(withinMonth) {
+      // Live day/hour/minute countdown once voting is under a month away.
+      electionDate.appendChild(renderCountdownLive(electionDT));
+    } else {
+      // Self-updating "in X Tagen"/"in X Monaten" text — recalculated every
+      // tick so the count ticks down on its own rather than freezing.
+      electionDate.appendChild(renderCountdownText(electionDT));
+    }
     
     info.appendChild(stateName);
     info.appendChild(electionType);
@@ -2009,17 +2157,9 @@ if(newest.date) {
   newestInfo.textContent = `Neuste Umfrage: ${formatDate(newest.date)} (${newest.location})`;
 }
 
-// Show first state by default (which is now the newest after sorting)
-// Only on desktop - don't auto-open modal on mobile
-const sortedStateKeys = Object.keys(data).sort((a, b) => {
-  const dateA = parseDate(data[a].date);
-  const dateB = parseDate(data[b].date);
-  return dateB - dateA;
-});
-// Only show state on desktop (avoid auto-opening modal on mobile)
-if(window.innerWidth > 1024) {
-  showState(sortedStateKeys[0]);
-}
+// Update the "Länder" tab count badge
+const laenderCountEl = document.getElementById('laender-count');
+if(laenderCountEl) laenderCountEl.textContent = Object.keys(data).length + ' Bundesländer';
 
 // Seat distribution and coalition calculator functions
 function calculateSeats(results, totalSeats) {
@@ -2070,16 +2210,20 @@ function openSeatsModal(location, results) {
   // Render seat distribution
   renderSeatDistribution(seats, totalSeats);
   
-  // Render coalition calculator
-  renderCoalitionCalculator(seats, totalSeats);
+  // Render coalition calculator (location wird durchgereicht, damit die
+  // amtierende Regierung markiert werden kann — Bundestag hat keinen
+  // Eintrag in governmentCoalitions, daher bleibt dort einfach alles ohne Badge)
+  renderCoalitionCalculator(seats, totalSeats, location);
   
   document.getElementById('seatsModal').classList.add('active');
+  document.body.classList.add('modal-open');
 }
 
 function closeSeatsModal() {
   document.getElementById('seatsModal').classList.remove('active');
   currentSeatsData = null;
   selectedCoalition = [];
+  document.body.classList.remove('modal-open');
 }
 
 function renderSeatDistribution(seats, totalSeats) {
@@ -2267,11 +2411,12 @@ function renderSeatDistribution(seats, totalSeats) {
   });
 }
 
-function renderCoalitionCalculator(seats, totalSeats) {
+function renderCoalitionCalculator(seats, totalSeats, location) {
   const partiesDiv = document.getElementById('coalitionParties');
   partiesDiv.innerHTML = '';
   
   const sortedSeats = Object.entries(seats).sort((a, b) => b[1] - a[1]);
+  const govParties = governmentCoalitions[location] || null;
   
   sortedSeats.forEach(([party, count]) => {
     const partyDiv = document.createElement('div');
@@ -2287,12 +2432,22 @@ function renderCoalitionCalculator(seats, totalSeats) {
     name.className = 'party-seat-name';
     name.textContent = party;
     
+    partyDiv.appendChild(logo);
+    partyDiv.appendChild(name);
+    
+    // Aktuelle Landesregierung als Badge kennzeichnen (nur wo eine
+    // Zuordnung in governmentCoalitions existiert, z.B. nicht Bundestag)
+    if(govParties && govParties.includes(party)) {
+      const govBadge = document.createElement('span');
+      govBadge.className = 'gov-badge';
+      govBadge.textContent = 'Regierung';
+      partyDiv.appendChild(govBadge);
+    }
+    
     const countDiv = document.createElement('div');
     countDiv.className = 'party-seat-count';
     countDiv.textContent = count + ' Sitze';
     
-    partyDiv.appendChild(logo);
-    partyDiv.appendChild(name);
     partyDiv.appendChild(countDiv);
     partiesDiv.appendChild(partyDiv);
   });
@@ -2372,26 +2527,28 @@ function updateCoalitionResult() {
   }
 }
 
-// Mobile State Modal Functions
-function openStateModal(state) {
-  const modal = document.getElementById('stateModal');
-  const bars = document.getElementById('stateModalBars');
+// Länder detail panel (inline, same pattern as Städte)
+function showLanderStats(state) {
+  document.getElementById('landerListWrap').style.display = 'none';
+  document.getElementById('landerStats').classList.add('active');
+
+  const bars = document.getElementById('landerStatsBars');
   bars.innerHTML = "";
-  
-  // Set background coat of arms for the state
-  modal.style.setProperty('--bg-coat', `url('${stateCoats[state]}')`);
-  
+
+  document.getElementById('landerStatsLogo').src = stateCoats[state];
+  document.getElementById('landerStatsLogo').alt = state + " Wappen";
+
   const isElectionModal = data[state].isElection === true;
-  document.getElementById('stateModalTitle').innerText = state + (isElectionModal ? ' – Ergebnis' : '');
-  document.getElementById('stateModalDate').innerText = (isElectionModal ? 'Ergebnis: ' : 'Stand: ') + data[state].date;
-  
+  document.getElementById('landerStatsName').innerText = state + (isElectionModal ? ' – Ergebnis' : '');
+  document.getElementById('landerStatsDate').innerText = (isElectionModal ? 'Ergebnis: ' : 'Stand: ') + data[state].date;
+
   // Calculate trends: use lastElection if isElection=true, else history[0]
   const currentResults = data[state].results;
   const leModal = data[state].lastElection;
   const previousResults = (isElectionModal && leModal && Object.keys(leModal.results||{}).length > 0)
     ? leModal.results
     : (data[state].history[0] ? data[state].history[0].results : {});
-  
+
   let entries = Object.entries(currentResults).sort((a,b) => {
     // Always put Sonstige last
     if(a[0] === 'Sonstige') return 1;
@@ -2399,23 +2556,23 @@ function openStateModal(state) {
     // Sort others by percentage descending
     return b[1] - a[1];
   });
-  
+
   entries.forEach(([p,v], index) => {
     if(v === 0) return;
     const r = document.createElement("div");
     r.className = "bar-row";
-    
+
     const logo = document.createElement("img");
     logo.src = logos[p];
     logo.className = "party-logo";
     logo.alt = p + " Logo";
-    
+
     const b = document.createElement("div");
     b.className = "bar";
     // Responsive scaling based on screen width
     const screenWidth = window.innerWidth;
     let scaleFactor;
-    
+
     if (screenWidth <= 480) {
       // Very small phones: 5px per %
       scaleFactor = 5;
@@ -2426,95 +2583,83 @@ function openStateModal(state) {
       // Desktop: 15px per %
       scaleFactor = 15;
     }
-    
+
     // Pure proportional scaling - no minimum to show true differences
     const targetWidth = v > 0 ? (v * scaleFactor) + "px" : "0px";
     b.style.background = colors[p];
     b.style.color = (p === "FDP" ? "#000" : "#fff");
     b.textContent = p;
-    
+
     // Calculate exact percentage difference
     const prevValue = previousResults[p] || 0;
     const diff = v - prevValue;
     let trendText = '';
     let trendClass = 'same';
-    
-    if(diff > 0) { 
-      trendText = '+' + diff.toFixed(1) + '%'; 
-      trendClass = 'up'; 
-    } else if(diff < 0) { 
-      trendText = diff.toFixed(1) + '%'; 
-      trendClass = 'down'; 
+
+    if(diff > 0) {
+      trendText = '+' + diff.toFixed(1) + '%';
+      trendClass = 'up';
+    } else if(diff < 0) {
+      trendText = diff.toFixed(1) + '%';
+      trendClass = 'down';
     } else {
       trendText = '±0%';
     }
-    
+
     // Trigger animation with delay
     setTimeout(() => {
       b.classList.add('animate');
       b.style.width = targetWidth;
     }, index * 100);
-    
+
     const pc = document.createElement("div");
     pc.className = "percent";
     pc.innerHTML = v + '% <span class="trend ' + trendClass + '" title="' + (isElectionModal ? 'Veraenderung zur letzten Wahl' : '') + '">' + trendText + '</span>';
-    
+
     r.appendChild(logo);
     r.appendChild(b);
     r.appendChild(pc);
     bars.appendChild(r);
   });
 
-  // Show change label when isElection (mobile modal)
+  // Show change label when isElection
   if(isElectionModal) {
     const changeLabel = document.createElement("div");
     changeLabel.style.cssText = "font-size:11px;color:#888;margin-bottom:0.5rem;margin-top:-0.3rem;text-align:right;padding-right:4px;";
     changeLabel.textContent = "± Veränderung zur letzten Wahl";
     bars.insertBefore(changeLabel, bars.firstChild);
   }
-  
+
   // Add seats button after bars
   const seatsBtn = document.createElement("button");
   seatsBtn.className = "seats-btn";
   seatsBtn.textContent = "Sitzverteilung/Koalitionen";
-  seatsBtn.onclick = () => {
-    closeStateModal();
-    openSeatsModal(state, currentResults);
-  };
+  seatsBtn.onclick = () => openSeatsModal(state, currentResults);
   bars.appendChild(seatsBtn);
 
   // Add diagram button
   const diagramBtn = document.createElement("button");
   diagramBtn.className = "diagram-btn";
-  diagramBtn.textContent = "📈 Diagramm";
-  diagramBtn.onclick = () => {
-    closeStateModal();
-    openDiagramModal(state, data[state].date, currentResults, data[state].history);
-  };
+  diagramBtn.textContent = "📈 Verlauf";
+  diagramBtn.onclick = () => openDiagramModal(state, data[state].date, currentResults, data[state].history);
   bars.appendChild(diagramBtn);
-  
+
   // Display historical data
-  const historyDiv = document.getElementById("stateModalHistory");
+  const historyDiv = document.getElementById("landerStatsHistory");
   historyDiv.innerHTML = "";
-
-  // Update history heading for modal
-  const stateModalHistoryHeading = document.querySelector('.state-modal-body .history-section h3');
-  if(stateModalHistoryHeading) stateModalHistoryHeading.textContent = 'Frühere Umfragen';
-
-
 
   data[state].history.slice(0, 3).forEach(h => {
     const row = document.createElement("div");
     row.className = "history-row";
-    
+
     const dateDiv = document.createElement("div");
     dateDiv.className = "history-date";
-    dateDiv.textContent = h.date;
+    dateDiv.innerHTML = historyTypeBadge(h) + '<span>' + h.date + '</span>';
     row.appendChild(dateDiv);
-    
+
     const partiesDiv = document.createElement("div");
     partiesDiv.className = "history-parties";
-    
+
     // Sort parties by their historical percentages, but always put Sonstige last
     const historicalEntries = Object.entries(h.results).sort((a,b) => {
       // Always put Sonstige last
@@ -2523,39 +2668,39 @@ function openStateModal(state) {
       // Sort others by percentage descending
       return b[1] - a[1];
     });
-    
+
     historicalEntries.forEach(([party, percent]) => {
       if(percent > 0) {
         const partyDiv = document.createElement("div");
         partyDiv.className = "history-party";
-        
+
         const nameDiv = document.createElement("div");
         nameDiv.className = "history-party-name";
         nameDiv.textContent = party;
-        
+
         const valueDiv = document.createElement("div");
         valueDiv.className = "history-party-value";
-        valueDiv.style.color = colors[party];
+        valueDiv.style.color = readableTextColor(colors[party]);
         valueDiv.textContent = percent + "%";
-        
+
         partyDiv.appendChild(nameDiv);
         partyDiv.appendChild(valueDiv);
         partiesDiv.appendChild(partyDiv);
       }
     });
-    
+
     row.appendChild(partiesDiv);
     historyDiv.appendChild(row);
   });
-  
-  modal.classList.add('active');
-  document.body.style.overflow = 'hidden';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function closeStateModal() {
-  const modal = document.getElementById('stateModal');
-  modal.classList.remove('active');
-  document.body.style.overflow = '';
+function showLanderList() {
+  document.getElementById('landerListWrap').style.display = '';
+  document.getElementById('landerStats').classList.remove('active');
+  currentState = null;
+  document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
 }
 
 // ========== CITY DATA ==========
@@ -2564,20 +2709,35 @@ const cityData = {
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/DEU_Frankfurt_am_Main_COA.svg/960px-DEU_Frankfurt_am_Main_COA.svg.png',
     date: '17.02.2026',
     isNew: false,
-    results: { 'CDU': 24, 'SPD': 20, 'Grüne': 19, 'AfD': 11, 'FDP': 3, 'BSW': 2, 'Linke': 12, 'Sonstige': 9 },
+    isElection: true,
+    results: { 'CDU': 25, 'SPD': 16.6, 'Grüne': 20.8, 'AfD': 8.2, 'FDP': 4.6, 'BSW': 1.2, 'Linke': 9.2, 'Sonstige': 14.4 },
     history: [
-      { date: '14.03.2021', results: { 'CDU': 21.9, 'SPD': 17, 'Grüne': 24.6, 'AfD': 4.5, 'FDP': 7.6, 'BSW': 0, 'Linke': 7.9, 'Sonstige': 14.2 } },
+	  { date: '17.02.2026', type: 'U', results: { 'CDU': 24, 'SPD': 20, 'Grüne': 19, 'AfD': 11, 'FDP': 3, 'BSW': 2, 'Linke': 12, 'Sonstige': 9 } },
+      { date: '14.03.2021', type: 'E', results: { 'CDU': 21.9, 'SPD': 17, 'Grüne': 24.6, 'AfD': 4.5, 'FDP': 7.6, 'BSW': 0, 'Linke': 7.9, 'Sonstige': 14.2 } },
     ]
   },
   'Hannover': {
     logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Coat_of_arms_of_Hannover.svg/960px-Coat_of_arms_of_Hannover.svg.png?utm_source=de.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
     date: '18.08.2026',
     isNew: true,
+    isElection: false,
     results: { 'CDU': 18, 'SPD': 23, 'Grüne': 21, 'AfD': 18, 'FDP': 4, 'BSW': 2, 'Linke': 13, 'Sonstige': 2 },
     history: [
-      { date: '12.09.2021', results: { 'CDU': 20.7, 'SPD': 27.7, 'Grüne': 27.8, 'AfD': 4.3, 'FDP': 6, 'BSW': 0, 'Linke': 5.6, 'Sonstige': 2 } },
+      { date: '12.09.2021', type: 'E', results: { 'CDU': 20.7, 'SPD': 27.7, 'Grüne': 27.8, 'AfD': 4.3, 'FDP': 6, 'BSW': 0, 'Linke': 5.6, 'Sonstige': 2 } },
     ]
-  }
+  },
+ 'Dortmund': {
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/DEU_Dortmund_COA.svg/960px-DEU_Dortmund_COA.svg.png?utm_source=de.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+    date: '14.09.2025',
+    isNew: false,
+    isElection: true,
+    results: { 'CDU': 22.1, 'SPD': 24.9, 'Grüne': 16.5, 'AfD': 16.6, 'FDP': 1.1, 'BSW': 2, 'Linke': 8, 'Sonstige': 6.7 },
+    history: [
+	  { date: '06.09.2025', type: 'U', results: { 'CDU': 24, 'SPD': 26, 'Grüne': 15, 'AfD': 16, 'FDP': 2, 'BSW': 2, 'Linke': 9, 'Sonstige': 6 } },
+      { date: '12.08.2025', type: 'U', results: { 'CDU': 24, 'SPD': 24, 'Grüne': 17, 'AfD': 15, 'FDP': 2, 'BSW': 2, 'Linke': 10, 'Sonstige': 6 } },
+	  { date: '13.09.2020', type: 'E', results: { 'CDU': 22.5, 'SPD': 30, 'Grüne': 24.8, 'AfD': 5.5, 'FDP': 3.5, 'BSW': 0, 'Linke': 5.6, 'Sonstige': 8.1 } },
+    ]
+  },
 };
   
 const cityColors = {
@@ -2585,36 +2745,148 @@ const cityColors = {
   'FDP': '#ffed00', 'Linke': '#be3075', 'BSW': '#9c1a6e', 'CDU': '#111111', 'Sonstige': '#888888'
 };
 
-// Add Neu badge to button if any city is new
-(function initWeitereBtn() {
-  const hasNew = Object.values(cityData).some(c => c.isNew);
-  if (hasNew) {
-    const btn = document.getElementById('weitereMainBtn');
+// Determine which top-level category (Bund / Länder / Städte) currently
+// holds the newest published poll, across bundestagData, data, and cityData.
+function findNewestOverall() {
+  let newestDate = null;
+  let category = null; // 'bund' | 'laender' | 'staedte'
+
+  const bundestagDate = parseDate(bundestagData.date);
+  if(bundestagDate) {
+    newestDate = bundestagDate;
+    category = 'bund';
+  }
+
+  Object.values(data).forEach(stateData => {
+    const d = parseDate(stateData.date);
+    if(d && (!newestDate || d > newestDate)) {
+      newestDate = d;
+      category = 'laender';
+    }
+  });
+
+  Object.values(cityData).forEach(cd => {
+    const d = parseDate(cd.date);
+    if(d && (!newestDate || d > newestDate)) {
+      newestDate = d;
+      category = 'staedte';
+    }
+  });
+
+  return { date: newestDate, category };
+}
+
+// Puts the "Neu" tab-badge on whichever of Bund/Länder/Städte has the most
+// recently dated poll — never a fixed tab.
+function updateTabBadges() {
+  document.querySelectorAll('.tab-btn .tab-badge').forEach(b => b.remove());
+
+  const { category } = findNewestOverall();
+  if(!category) return;
+
+  const tabIdMap = { bund: 'tabBund', laender: 'tabLaender', staedte: 'tabStaedte' };
+  const btn = document.getElementById(tabIdMap[category]);
+  if(btn) {
     const badge = document.createElement('span');
-    badge.className = 'neue-badge';
+    badge.className = 'tab-badge';
     badge.textContent = 'Neu';
     btn.appendChild(badge);
   }
-})();
-
-function openWeitere() {
-  document.getElementById('weitereOverlay').classList.add('active');
-  document.body.style.overflow = 'hidden';
-  showCityGrid();
 }
 
-function closeWeitere() {
-  document.getElementById('weitereOverlay').classList.remove('active');
-  document.body.style.overflow = '';
+// ========== TAB / VIEW SWITCHER ==========
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.getElementById('tab' + view.charAt(0).toUpperCase() + view.slice(1)).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ========== LÄNDER SEARCH FILTER ==========
+function filterStates() {
+  const q = document.getElementById('stateSearch').value.trim().toLowerCase();
+  document.querySelectorAll('#states .state').forEach(el => {
+    const name = el.querySelector('.state-name').textContent.toLowerCase();
+    el.style.display = name.includes(q) ? '' : 'none';
+  });
+}
+
+// ========== LIVE TICKER ==========
+// Finds whichever election is currently "live" (Wahltag already started —
+// voting or counting) if one exists, otherwise the nearest future one.
+// Used to decide what the ticker's vote-status segment points at.
+function getNextUpcomingElection() {
+  const now = new Date();
+  let active = null;
+  let best = null;
+  elections2026.forEach(e => {
+    const dt = getElectionDateTime(e.date);
+    if(!dt) return;
+    if(dt <= now) {
+      if(!active || dt > active.dt) active = Object.assign({}, e, { dt });
+    } else if(!best || dt < best.dt) {
+      best = Object.assign({}, e, { dt });
+    }
+  });
+  return active || best;
+}
+
+// Scannt Bund, Länder und Städte nach den größten Partei-Bewegungen.
+function buildTicker() {
+  const track = document.getElementById('tickerTrack');
+  if(!track) return;
+  const parts = [];
+
+  const btLeader = getLeadingParty(bundestagData.results);
+  parts.push(`Bundestag: <b>${btLeader}</b> führt mit ${bundestagData.results[btLeader]}% (Stand ${bundestagData.date})`);
+
+  const newest = findNewestPoll();
+  if(newest.date) {
+    parts.push(`Neuste Umfrage: <b>${newest.location}</b>, ${formatDate(newest.date)}`);
+  }
+
+  // Nearest upcoming (or currently live) vote, with its D/H/M countdown —
+  // or Wahltag status — spliced right into the ticker text so it's
+  // visible without switching to the Wahlen tab.
+  const nextVote = getNextUpcomingElection();
+  if(nextVote) {
+    let statusText;
+    const phase = getVotePhase(nextVote.dt);
+    if(phase === 'upcoming') {
+      const p = getCountdownParts(nextVote.dt);
+      statusText = `${p.days}T ${p.hours}Std ${p.minutes}Min`;
+    } else if(phase === 'open') {
+      statusText = 'Wahllokale geöffnet';
+    } else {
+      statusText = 'Auszählung läuft';
+    }
+    parts.push(`Nächste Wahl: <b>${nextVote.state}</b> · ${nextVote.type} · in <span class="ticker-live-countdown" data-countdown-target="${nextVote.dt.getTime()}">${statusText}</span>`);
+  }
+
+  const line = parts.join(' <span class="tk-sep">✦</span> ');
+  track.innerHTML = line + ' <span class="tk-sep">✦</span> ' + line;
 }
 
 function showCityGrid() {
+  document.getElementById('cityGridWrap').style.display = '';
   document.getElementById('cityGrid').style.display = 'grid';
   document.getElementById('cityStats').classList.remove('active');
-  document.getElementById('weitereTitle').textContent = '🏙️ Weitere Umfragen';
   const grid = document.getElementById('cityGrid');
   grid.innerHTML = '';
-  Object.entries(cityData).forEach(([city, cd]) => {
+
+  // Sort by date, newest first — same logic used for Länder
+  const sortedCities = Object.keys(cityData).sort((a, b) => {
+    const dateA = parseDateSafe(cityData[a].date);
+    const dateB = parseDateSafe(cityData[b].date);
+    if(!dateA && !dateB) return 0;
+    if(!dateA) return 1;
+    if(!dateB) return -1;
+    return dateB - dateA;
+  });
+
+  sortedCities.forEach(city => {
+    const cd = cityData[city];
     const card = document.createElement('div');
     card.className = 'city-card';
     let touchStart = 0;
@@ -2625,24 +2897,34 @@ function showCityGrid() {
     card.addEventListener('click', () => {
       if (!('ontouchstart' in window)) showCityStats(city);
     });
+    const cityBadge = cd.isElection
+      ? '<span class="new-badge" style="margin-top:4px;background:#4f7fa8">Ergebnis</span>'
+      : (cd.isNew ? '<span class="new-badge" style="margin-top:4px">Neue Umfrage</span>' : '');
     card.innerHTML = `
       <img src="${cd.logo}" alt="${city} Wappen">
       <div class="city-card-name">${city}</div>
-      <div class="city-card-date">Stand: ${cd.date}</div>
-      ${cd.isNew ? '<span class="new-badge" style="margin-top:4px">Neue Umfrage</span>' : ''}
+      <div class="city-card-date">${cd.isElection ? 'Ergebnis' : 'Stand'}: ${cd.date}</div>
+      ${cityBadge}
     `;
     grid.appendChild(card);
   });
 }
 
+function filterCities() {
+  const q = document.getElementById('citySearch').value.trim().toLowerCase();
+  document.querySelectorAll('#cityGrid .city-card').forEach(el => {
+    const name = el.querySelector('.city-card-name').textContent.toLowerCase();
+    el.style.display = name.includes(q) ? '' : 'none';
+  });
+}
+
 function showCityStats(city) {
   const cd = cityData[city];
-  document.getElementById('cityGrid').style.display = 'none';
+  document.getElementById('cityGridWrap').style.display = 'none';
   document.getElementById('cityStats').classList.add('active');
-  document.getElementById('weitereTitle').textContent = '🏙️ ' + city;
   document.getElementById('cityStatsLogo').src = cd.logo;
-  document.getElementById('cityStatsName').textContent = city;
-  document.getElementById('cityStatsDate').textContent = 'Stand: ' + cd.date;
+  document.getElementById('cityStatsName').textContent = city + (cd.isElection ? ' – Ergebnis' : '');
+  document.getElementById('cityStatsDate').textContent = (cd.isElection ? 'Stadtratswahl-Ergebnis · Ergebnis: ' : 'Stadtratswahl-Umfrage · Stand: ') + cd.date;
   const barsDiv = document.getElementById('cityStatsBars');
   barsDiv.innerHTML = '';
   const entries = Object.entries(cd.results).sort((a, b) => {
@@ -2684,7 +2966,7 @@ function showCityStats(city) {
     row.className = 'history-row';
     const dateDiv = document.createElement('div');
     dateDiv.className = 'history-date';
-    dateDiv.textContent = h.date;
+    dateDiv.innerHTML = historyTypeBadge(h) + '<span>' + h.date + '</span>';
     row.appendChild(dateDiv);
     const partiesDiv = document.createElement('div');
     partiesDiv.className = 'history-parties';
@@ -2696,19 +2978,19 @@ function showCityStats(city) {
       if(pct > 0) {
         const pd = document.createElement('div');
         pd.className = 'history-party';
-        pd.innerHTML = '<div class="history-party-name">' + p + '</div><div class="history-party-value" style="color:' + (cityColors[p]||'#aaa') + '">' + pct + '%</div>';
+        pd.innerHTML = '<div class="history-party-name">' + p + '</div><div class="history-party-value" style="color:' + readableTextColor(cityColors[p]||'#aaa') + '">' + pct + '%</div>';
         partiesDiv.appendChild(pd);
       }
     });
     row.appendChild(partiesDiv);
     histDiv.appendChild(row);
   });
-  document.getElementById('weitereBody').scrollTop = 0;
 }
 
-document.getElementById('weitereOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeWeitere();
-});
+// Initial render for the Städte tab content + the live ticker
+showCityGrid();
+buildTicker();
+updateTabBadges();
 
 </script>
 </body>
