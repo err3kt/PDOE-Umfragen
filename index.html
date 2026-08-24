@@ -9,16 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/*
-  Design notes — "Wahlticker" (election-night scoreboard) direction.
-  A full structural rewrite: tab navigation replaces the split desktop-panel
-  / mobile-modal duality, a single universal bottom-sheet drawer replaces
-  both, states render as a dense scoreboard list instead of an icon grid,
-  and a live marquee ticker becomes the page's signature element. Amber is
-  used as the one neutral UI accent so it never gets confused with any
-  party's own colour. All poll data, party colours/logos, and the
-  Sainte-Laguë seat math are untouched.
-*/
+
 :root {
   --bg: #060607;
   --panel: #0d0e0f;
@@ -253,10 +244,12 @@ body.modal-open .ticker-track { animation-play-state: paused; }
 .bundestag-container::before {
   content:"";
   position:absolute;
-  top:-40px; right:-40px;
-  width:220px;height:220px;
+  top:50%; left:50%;
+  width:260px;height:260px;
+  transform: translate(-50%, -50%);
   background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Coat_of_arms_of_Germany.svg/960px-Coat_of_arms_of_Germany.svg.png');
   background-size:contain;
+  background-position:center;
   background-repeat:no-repeat;
   opacity:0.05;
   filter: grayscale(1);
@@ -307,26 +300,21 @@ body.modal-open .ticker-track { animation-play-state: paused; }
 .bar:hover { filter: brightness(1.1); }
 .percent { width:86px; text-align:right; font-weight:800; font-family: var(--font-mono); font-size:14px; flex-shrink:0; }
 
-/* ===== History ===== */
-.history-section { margin-top:1.8rem; padding-top:1.3rem; border-top:1px dashed var(--border); }
-.history-section h3 { font-family: var(--font-mono); font-size:10.5px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color: var(--text-muted); margin-bottom:0.9rem; }
-.history-row { margin:0.8rem 0; padding:0.9rem; background: var(--surface); border-radius:8px; border:1px solid var(--border); }
-.history-date { font-size:10.5px; color: var(--text-muted); font-family: var(--font-mono); margin-bottom:0.6rem; letter-spacing:0.06em; display:flex; align-items:center; gap:6px; }
-.history-type-badge {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:15px; height:15px; border-radius:4px;
-  font-size:9px; font-weight:800; font-family: var(--font-mono);
-  line-height:1; flex-shrink:0;
+/* ===== History / Verlauf ===== */
+.history-section { margin-top:2rem; padding-top:1.4rem; border-top:1px solid var(--border); }
+.history-section h3 {
+  font-family: var(--font-mono); font-size:10.5px; font-weight:800;
+  letter-spacing:0.16em; text-transform:uppercase; color: var(--text-dim);
+  margin:0 0 1rem 0; display:flex; align-items:center; gap:8px;
 }
-.history-type-badge.u { background: rgba(255,177,0,0.14); color: var(--accent); border:1px solid rgba(255,177,0,0.4); }
-.history-type-badge.e { background: rgba(79,127,168,0.2); color: #8fb4d8; border:1px solid rgba(79,127,168,0.55); }
+.history-section h3::before { content:''; width:14px; height:2px; background: var(--accent); flex-shrink:0; }
 
 .history-legend {
   display:flex;
   flex-wrap:wrap;
-  gap:0.5rem 1rem;
-  margin-bottom:0.9rem;
-  padding:0.6rem 0.8rem;
+  gap:0.4rem 1.1rem;
+  margin-bottom:1.1rem;
+  padding:0.6rem 0.85rem;
   background: var(--surface);
   border:1px solid var(--border);
   border-radius:8px;
@@ -336,14 +324,68 @@ body.modal-open .ticker-track { animation-play-state: paused; }
   align-items:center;
   gap:6px;
   font-family: var(--font-mono);
-  font-size:10.5px;
+  font-size:10px;
   color: var(--text-dim);
-  letter-spacing:0.02em;
+  letter-spacing:0.03em;
 }
-.history-parties { display:grid;grid-template-columns:repeat(auto-fit,minmax(66px,1fr));gap:0.5rem }
-.history-party { text-align:center }
-.history-party-name { font-size:9px;color:var(--text-muted);margin-bottom:0.15rem;font-family:var(--font-mono);letter-spacing:0.05em }
-.history-party-value { font-size:12px;font-weight:700;font-family:var(--font-mono) }
+
+/* Rows sit on a faint connecting spine so the list reads as a timeline,
+   newest at the top, rather than a stack of unrelated cards. */
+.history-timeline { position:relative; }
+.history-timeline::before {
+  content:'';
+  position:absolute; left:8px; top:6px; bottom:6px;
+  width:1px;
+  background: linear-gradient(180deg, var(--border-bright), transparent 96%);
+}
+.history-row {
+  position:relative;
+  margin:0 0 0.65rem 0;
+  padding:0.85rem 1rem 0.85rem 2.1rem;
+  background: var(--surface);
+  border-radius:10px;
+  border:1px solid var(--border);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+.history-row:last-child { margin-bottom:0; }
+.history-row:hover { background: var(--surface-hover); border-color: var(--border-bright); transform: translateX(2px); }
+.history-row::before {
+  content:'';
+  position:absolute; left:5px; top:1.05rem;
+  width:7px; height:7px; border-radius:50%;
+  background: var(--panel);
+  border:2px solid var(--text-muted);
+  z-index:1;
+}
+.history-row:has(.history-type-badge.u)::before { border-color: var(--accent); }
+.history-row:has(.history-type-badge.e)::before { border-color: #8fb4d8; }
+
+.history-date {
+  font-size:10.5px; color: var(--text-dim); font-family: var(--font-mono);
+  font-weight:600; margin-bottom:0.7rem; letter-spacing:0.06em;
+  display:flex; align-items:center; gap:7px;
+}
+.history-type-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:16px; height:16px; padding:0 4px; border-radius:5px;
+  font-size:9px; font-weight:800; font-family: var(--font-mono);
+  line-height:1; flex-shrink:0;
+}
+.history-type-badge.u { background: rgba(255,177,0,0.14); color: var(--accent); border:1px solid rgba(255,177,0,0.4); }
+.history-type-badge.e { background: rgba(79,127,168,0.2); color: #8fb4d8; border:1px solid rgba(79,127,168,0.55); }
+
+.history-parties { display:grid;grid-template-columns:repeat(auto-fit,minmax(62px,1fr));gap:0.5rem }
+.history-party {
+  text-align:center;
+  padding:0.45rem 0.2rem 0.5rem;
+  background: rgba(255,255,255,0.035);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:8px;
+  transition: background 0.15s ease;
+}
+.history-party:hover { background: rgba(255,255,255,0.07); }
+.history-party-name { font-size:9px;color:var(--text-muted);margin-bottom:0.25rem;font-family:var(--font-mono);letter-spacing:0.05em;text-transform:uppercase; }
+.history-party-value { font-size:13px;font-weight:800;font-family:var(--font-mono) }
 
 /* Trends */
 .trend { display:inline-block;margin-left:5px;font-size:10px;font-weight:800;font-family:var(--font-mono) }
@@ -433,7 +475,8 @@ body.modal-open .ticker-track { animation-play-state: paused; }
   transition:all 0.18s ease;
 }
 .close-btn:hover { filter:brightness(1.15); }
-.modal-body { display:grid;grid-template-columns:1fr 1fr;gap:1.2rem; padding:1.3rem; max-height:calc(90vh - 66px); overflow-y:auto; }
+.modal-body { display:grid;grid-template-columns:1fr;gap:1.2rem; padding:1.3rem; max-height:calc(90vh - 66px); overflow-y:auto; }
+.modal-body .modal-section { max-width:560px; margin:0 auto; width:100%; }
 .modal-section { background:var(--surface); border-radius:12px;padding:1.1rem; border:1px solid var(--border); }
 .modal-section h3 { margin:0 0 1rem 0; font-family: var(--font-mono); font-size:10.5px;font-weight:700; letter-spacing:0.12em;text-transform:uppercase; color:var(--accent); }
 .seats-grid { display:flex;flex-wrap:wrap;gap:4px;margin-top:1rem;justify-content:center;align-items:flex-end;position:relative;min-height:300px }
@@ -443,6 +486,57 @@ body.modal-open .ticker-track { animation-play-state: paused; }
 .party-seat-logo { width:22px;height:22px;object-fit:contain }
 .party-seat-name { flex:1;font-size:13px;font-weight:600 }
 .party-seat-count { font-size:13px;font-weight:800;font-family:var(--font-mono);color:var(--accent) }
+
+/* ===== Results + seat distribution side-by-side (Bund & Länder) ===== */
+.results-with-seats {
+  display:flex;
+  gap:1.8rem;
+  align-items:flex-start;
+}
+.results-bars-col {
+  flex:1 1 300px;
+  min-width:0;
+}
+.results-seats-col {
+  flex:1 1 320px;
+  min-width:260px;
+  padding-top:0.2rem;
+  position:relative;
+  z-index:1;
+}
+.results-seats-heading {
+  margin:0 0 0.4rem 0;
+  font-family: var(--font-mono);
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color: var(--accent);
+}
+.results-seats-col .seats-grid { min-height:180px; margin-top:0.5rem; }
+/* Compact two-per-row party/seat list: cuts the panel's height roughly in
+   half so it stops running taller than the bars column next to it and
+   overshooting past the action buttons below. */
+#bundestag-seats-list, #landerStats-seats-list {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 0.5rem;
+}
+.results-seats-col .party-seat-info {
+  margin:0;
+  padding:0.35rem 0.5rem;
+  gap:6px;
+}
+.results-seats-col .party-seat-logo { width:16px;height:16px; }
+.results-seats-col .party-seat-name { font-size:11.5px; }
+.results-seats-col .party-seat-count { font-size:11.5px; white-space:nowrap; }
+@media screen and (max-width: 860px) {
+  .results-with-seats { flex-direction:column; }
+  .results-seats-col { width:100%; min-width:0; }
+}
+@media screen and (max-width: 420px) {
+  #bundestag-seats-list, #landerStats-seats-list { grid-template-columns: 1fr; }
+}
 
 .coalition-party { display:flex;align-items:center;gap:8px; padding:0.65rem; background:rgba(255,255,255,0.03); border-radius:8px;margin:0.4rem 0; cursor:pointer; transition:all 0.18s ease; border:1px solid var(--border); }
 .coalition-party:hover { background:var(--surface-hover); border-color:var(--border-bright); }
@@ -469,8 +563,15 @@ body.modal-open .ticker-track { animation-play-state: paused; }
 .coalition-stat-label { font-size:9.5px;color:var(--text-muted);margin-top:0.2rem;letter-spacing:0.06em;text-transform:uppercase; font-family:var(--font-mono); }
 
 .diagram-body { padding:1.1rem 1.4rem 1.4rem; max-height:calc(90vh - 66px); overflow-y:auto; }
-.diagram-chart-wrap { background:var(--surface); border-radius:10px; padding:1rem 0.6rem 0.6rem; border:1px solid var(--border); overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
+.diagram-chart-wrap { background:var(--surface); border-radius:10px; padding:1rem 0.6rem 0.6rem; border:1px solid var(--border); overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; position:relative; }
 .diagram-note { color:var(--text-muted); font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.04em; margin-top:0.8rem; text-align:center; line-height:1.5; }
+
+/* ===== Trend chart — line-draw animation ===== */
+@keyframes chartLineDraw { to { stroke-dashoffset: 0; } }
+.chart-line-path { animation: chartLineDraw 1.15s cubic-bezier(0.16,1,0.3,1) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .chart-line-path { animation:none; stroke-dashoffset:0 !important; }
+}
 
 /* ===== Diagram modal header (eyebrow + title + subtitle) ===== */
 .diagram-modal-header { align-items:flex-start; gap:1rem; }
@@ -733,6 +834,8 @@ body.modal-open .ticker-track { animation-play-state: paused; }
 .city-stats-header img { width: 46px; height: 46px; object-fit: contain; filter: grayscale(0.15) }
 .city-stats-title h3 { margin: 0 0 0.2rem 0; font-family: var(--font-display); font-weight:400; font-size: 17px; text-transform:uppercase; }
 .city-stats-title .date { color: var(--text-muted); font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.05em }
+.header-countdown-slot { margin-left:auto; flex-shrink:0; }
+.header-countdown-slot .countdown-chip { font-size:10px; padding:5px 11px 5px 9px; }
 
 /* ===== Responsive ===== */
 @media screen and (max-width: 768px) {
@@ -772,15 +875,10 @@ body.modal-open .ticker-track { animation-play-state: paused; }
 <div class="modal-overlay" id="seatsModal">
 <div class="modal-content">
 <div class="modal-header">
-<h2 id="modalTitle">Sitzverteilung & Koalitionen</h2>
+<h2 id="modalTitle">Koalitionsrechner</h2>
 <button class="close-btn" onclick="closeSeatsModal()">Schließen</button>
 </div>
 <div class="modal-body">
-<div class="modal-section">
-<h3>Sitzverteilung</h3>
-<div id="seatsList"></div>
-<div id="seatsGrid" class="seats-grid"></div>
-</div>
 <div class="modal-section">
 <h3>Koalitionsrechner</h3>
 <div id="coalitionParties"></div>
@@ -831,7 +929,14 @@ body.modal-open .ticker-track { animation-play-state: paused; }
 <div class="bundestag-container">
 <h2>Aktuelle Bundestag Umfrage <span id="bundestag-new-badge"></span></h2>
 <div class="date" id="bundestag-date"></div>
-<div id="bundestag-bars"></div>
+<div class="results-with-seats">
+<div id="bundestag-bars" class="results-bars-col"></div>
+<div class="results-seats-col">
+<h3 class="results-seats-heading">Sitzverteilung</h3>
+<div id="bundestag-seats-list"></div>
+<div id="bundestag-seats-grid" class="seats-grid"></div>
+</div>
+</div>
 <div class="badge-container" id="bundestag-badge"></div>
 </div>
 </div>
@@ -854,15 +959,23 @@ body.modal-open .ticker-track { animation-play-state: paused; }
 <h3 id="landerStatsName"></h3>
 <div class="date" id="landerStatsDate"></div>
 </div>
+<div id="landerStatsCountdown" class="header-countdown-slot"></div>
 </div>
-<div id="landerStatsBars"></div>
+<div class="results-with-seats">
+<div id="landerStatsBars" class="results-bars-col"></div>
+<div class="results-seats-col">
+<h3 class="results-seats-heading">Sitzverteilung</h3>
+<div id="landerStats-seats-list"></div>
+<div id="landerStats-seats-grid" class="seats-grid"></div>
+</div>
+</div>
 <div class="history-section">
 <h3>Frühere Umfragen</h3>
 <div class="history-legend">
 <span class="history-legend-item"><span class="history-type-badge u">U</span> Umfrage</span>
 <span class="history-legend-item"><span class="history-type-badge e">E</span> Ergebnis</span>
 </div>
-<div id="landerStatsHistory"></div>
+<div id="landerStatsHistory" class="history-timeline"></div>
 </div>
 </div>
 </div>
@@ -892,7 +1005,7 @@ body.modal-open .ticker-track { animation-play-state: paused; }
 <span class="history-legend-item"><span class="history-type-badge u">U</span> Umfrage</span>
 <span class="history-legend-item"><span class="history-type-badge e">E</span> Ergebnis</span>
 </div>
-<div id="cityStatsHistory"></div>
+<div id="cityStatsHistory" class="history-timeline"></div>
 </div>
 </div>
 </div>
@@ -1329,6 +1442,27 @@ function buildTimeline(currentDate, currentResults, historyArr) {
   return points;
 }
 
+// Catmull-Rom → cubic Bézier conversion, so the trend line reads as a smooth
+// curve through every real data point rather than sharp polyline angles.
+function smoothPathD(pts) {
+  if(pts.length === 0) return '';
+  if(pts.length === 1) return `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  if(pts.length === 2) return `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)} L${pts[1].x.toFixed(1)},${pts[1].y.toFixed(1)}`;
+  let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for(let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] || p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
 function renderTrendChart(container, points) {
   container.innerHTML = "";
 
@@ -1352,52 +1486,54 @@ function renderTrendChart(container, points) {
   if(maxV <= minV) maxV = minV + 5;
 
   const isNarrow = window.innerWidth <= 600;
-  const n0 = points.length;
+  const n = points.length;
   const W = isNarrow ? 560 : 780;
   const H = isNarrow ? 434 : 454;
-  const marginTop = 64, marginBottom = 14, marginLeft = 30, marginRight = isNarrow ? 118 : 128;
+  const marginTop = 28, marginBottom = 34, marginLeft = 32, marginRight = isNarrow ? 118 : 128;
   const chartW = W - marginLeft - marginRight;
   const chartH = H - marginTop - marginBottom;
 
   // As poll count grows, shrink dots/line thickness a bit so a dense timeline
   // (e.g. 100 old polls) still fits on screen without ever needing to scroll.
-  const density = Math.max(0, n0 - 15);
+  const density = Math.max(0, n - 15);
   const dotR = Math.max(1.3, 3.2 - density * 0.03);
-  const lineW = Math.max(1.1, 2.5 - density * 0.02);
+  const lineW = Math.max(1.3, 2.6 - density * 0.02);
+  const showDots = n <= 40; // beyond that, static dots clutter — hover still reveals values
 
-  const n = points.length;
   const xFor = i => marginLeft + (n === 1 ? chartW / 2 : (i / (n - 1)) * chartW);
   const yFor = v => marginTop + chartH - ((v - minV) / (maxV - minV)) * chartH;
+  const baselineY = marginTop + chartH;
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;overflow:visible;font-family:'JetBrains Mono',monospace;">`;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;overflow:visible;font-family:'JetBrains Mono',monospace;" id="trendSvg">`;
 
-  // Gridlines + y labels
+  // Defs: glow filter only — no per-party fill under the lines, so overlapping
+  // series stay readable instead of stacking into a wash of colour.
+  svg += `<defs><filter id="lineGlow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="2.2" result="blur"/>
+    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>`;
+
+  // Horizontal gridlines + y labels (dashed mid-lines, solid top/bottom for structure)
   const steps = 5;
   const gridStep = (maxV - minV) / steps;
   for(let i = 0; i <= steps; i++) {
     const v = minV + gridStep * i;
     const y = yFor(v);
-    svg += `<line x1="${marginLeft}" y1="${y.toFixed(1)}" x2="${(W - marginRight).toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`;
-    svg += `<text x="${marginLeft - 6}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#5a6070">${Math.round(v)}</text>`;
+    const isEdge = i === 0 || i === steps;
+    svg += `<line x1="${marginLeft}" y1="${y.toFixed(1)}" x2="${(W - marginRight).toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,${isEdge ? 0.12 : 0.06})" stroke-width="1" ${isEdge ? '' : 'stroke-dasharray="2,4"'}/>`;
+    svg += `<text x="${marginLeft - 7}" y="${(y + 3.5).toFixed(1)}" text-anchor="end" font-size="10.5" fill="#5a6070">${Math.round(v)}</text>`;
   }
 
-  // X gridlines (all points) + date labels (thinned out to avoid crowding)
-  const maxLabels = isNarrow ? 6 : 11;
+  // Date labels along the bottom, thinned to avoid crowding
+  const maxLabels = isNarrow ? 5 : 10;
   const labelStep = Math.max(1, Math.ceil((n - 1) / (maxLabels - 1)));
   points.forEach((pt, i) => {
-    const x = xFor(i);
-    svg += `<line x1="${x.toFixed(1)}" y1="${marginTop}" x2="${x.toFixed(1)}" y2="${H - marginBottom}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
     const showLabel = (i % labelStep === 0) || (i === n - 1);
     if(showLabel) {
-      svg += `<text x="${x.toFixed(1)}" y="${marginTop - 12}" text-anchor="start" font-size="10" fill="#8892a0" transform="rotate(-40 ${x.toFixed(1)} ${marginTop - 12})">${pt.dateStr}</text>`;
+      const x = xFor(i);
+      svg += `<text x="${x.toFixed(1)}" y="${(baselineY + 18).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="#7a8290">${pt.dateStr}</text>`;
     }
   });
-
-  // Lines + dots (glow filter to match site aesthetic)
-  svg += `<defs><filter id="lineGlow" x="-50%" y="-50%" width="200%" height="200%">
-    <feGaussianBlur stdDeviation="2.2" result="blur"/>
-    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-  </filter></defs>`;
 
   // Anti-overlap: when two or more parties share the same (or near-identical) value at a
   // given point, their lines/dots land on the exact same pixels. Since strokes are painted
@@ -1430,21 +1566,26 @@ function renderTrendChart(container, points) {
     }
   }
 
+  // Area fills + smooth Bézier lines (animated draw-in) + optional dots
   seriesData.forEach((s, si) => {
-    const pts = s.values.map((v, i) => `${xFor(i).toFixed(1)},${jitterY[si][i].toFixed(1)}`).join(' ');
-    svg += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${lineW}" stroke-linejoin="round" stroke-linecap="round" opacity="0.95" filter="url(#lineGlow)"/>`;
-    s.values.forEach((v, i) => {
-      svg += `<circle cx="${xFor(i).toFixed(1)}" cy="${jitterY[si][i].toFixed(1)}" r="${dotR}" fill="${s.color}" stroke="#0d1117" stroke-width="1"/>`;
-    });
+    const pts = s.values.map((v, i) => ({ x: xFor(i), y: jitterY[si][i] }));
+    const lineD = smoothPathD(pts);
+    const pathLen = 1400 + n * 40;
+    svg += `<path class="chart-line-path" d="${lineD}" fill="none" stroke="${s.color}" stroke-width="${lineW}" stroke-linejoin="round" stroke-linecap="round" opacity="0.95" filter="url(#lineGlow)" style="stroke-dasharray:${pathLen};stroke-dashoffset:${pathLen};animation-delay:${si * 0.06}s"/>`;
+    if(showDots) {
+      pts.forEach(p => {
+        svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${dotR}" fill="${s.color}" stroke="#0d1117" stroke-width="1"/>`;
+      });
+    }
   });
 
-  // End labels with basic collision avoidance (start from the de-overlapped line-end position)
+  // End label chips, with basic collision avoidance (start from the de-overlapped line-end position)
   let labelPositions = seriesData.map((s, si) => {
     const lastVal = s.values[s.values.length - 1];
     return { party: s.party, color: s.color, value: lastVal, y: jitterY[si][n - 1] };
   }).sort((a, b) => a.y - b.y);
 
-  const minGap = 15;
+  const minGap = 17;
   for(let i = 1; i < labelPositions.length; i++) {
     if(labelPositions[i].y - labelPositions[i - 1].y < minGap) {
       labelPositions[i].y = labelPositions[i - 1].y + minGap;
@@ -1452,9 +1593,13 @@ function renderTrendChart(container, points) {
   }
 
   const endX = xFor(n - 1);
+  const chipW = isNarrow ? 96 : 104;
   labelPositions.forEach(lp => {
-    svg += `<circle cx="${(endX + 8).toFixed(1)}" cy="${lp.y.toFixed(1)}" r="4.2" fill="${lp.color}" stroke="#0d1117" stroke-width="1.5"/>`;
-    svg += `<text x="${(endX + 16).toFixed(1)}" y="${(lp.y + 4).toFixed(1)}" font-size="12" font-weight="700" fill="${readableTextColor(lp.color)}">${lp.party} ${lp.value.toFixed(1)}</text>`;
+    const chipX = endX + 12;
+    svg += `<circle cx="${endX.toFixed(1)}" cy="${lp.y.toFixed(1)}" r="3.6" fill="${lp.color}" stroke="#0d1117" stroke-width="1.4"/>`;
+    svg += `<rect x="${chipX.toFixed(1)}" y="${(lp.y - 10).toFixed(1)}" width="${chipW}" height="20" rx="10" fill="rgba(255,255,255,0.05)" stroke="${lp.color}" stroke-opacity="0.55" stroke-width="1"/>`;
+    svg += `<text x="${(chipX + 9).toFixed(1)}" y="${(lp.y + 3.7).toFixed(1)}" font-size="10.5" font-weight="800" fill="${lp.color}">${lp.party}</text>`;
+    svg += `<text x="${(chipX + chipW - 8).toFixed(1)}" y="${(lp.y + 3.7).toFixed(1)}" text-anchor="end" font-size="10.5" font-weight="700" fill="#eceae4">${lp.value.toFixed(1)}%</text>`;
   });
 
   svg += `</svg>`;
@@ -1793,12 +1938,21 @@ function showBundestag() {
     newBadgeContainer.appendChild(badge);
   }
   
-  // Add seats button
+  // Add coalition calculator button
   const seatsBtn = document.createElement("button");
   seatsBtn.className = "seats-btn";
-  seatsBtn.textContent = "Sitzverteilung/Koalitionen";
+  seatsBtn.textContent = "Koalitionsrechner";
   seatsBtn.onclick = () => openSeatsModal('Bundestag', bundestagData.results);
   badgeContainer.appendChild(seatsBtn);
+
+  // Render the seat distribution (Sitzverteilung) inline, next to the bars
+  const btSeats = calculateSeats(bundestagData.results, seatCounts['Bundestag'] || 630);
+  renderSeatDistribution(
+    btSeats,
+    seatCounts['Bundestag'] || 630,
+    document.getElementById('bundestag-seats-list'),
+    document.getElementById('bundestag-seats-grid')
+  );
 
   // Add diagram button
   const bundestagDiagramBtn = document.createElement("button");
@@ -1806,7 +1960,7 @@ function showBundestag() {
   bundestagDiagramBtn.textContent = "📈 Verlauf";
   bundestagDiagramBtn.onclick = () => openDiagramModal('Bundestag', bundestagData.date, bundestagData.results, bundestagData.history);
   badgeContainer.appendChild(bundestagDiagramBtn);
-  
+
   // Calculate trends from most recent history
   const currentResults = bundestagData.results;
   const previousResults = bundestagData.history[0].results;
@@ -2205,10 +2359,7 @@ function openSeatsModal(location, results) {
   currentSeatsData = { location, seats, totalSeats };
   selectedCoalition = [];
   
-  document.getElementById('modalTitle').textContent = location + ' - Sitzverteilung & Koalitionen';
-  
-  // Render seat distribution
-  renderSeatDistribution(seats, totalSeats);
+  document.getElementById('modalTitle').textContent = location + ' - Koalitionsrechner';
   
   // Render coalition calculator (location wird durchgereicht, damit die
   // amtierende Regierung markiert werden kann — Bundestag hat keinen
@@ -2223,12 +2374,15 @@ function closeSeatsModal() {
   document.getElementById('seatsModal').classList.remove('active');
   currentSeatsData = null;
   selectedCoalition = [];
+  // Reset opacity on the inline seat-distribution dots (Bund/Länder views)
+  // so they don't stay dimmed after the coalition calculator is closed.
+  document.querySelectorAll('.seat-dot').forEach(dot => { dot.style.opacity = '1'; });
   document.body.classList.remove('modal-open');
 }
 
-function renderSeatDistribution(seats, totalSeats) {
-  const listDiv = document.getElementById('seatsList');
-  const gridDiv = document.getElementById('seatsGrid');
+function renderSeatDistribution(seats, totalSeats, listDiv, gridDiv) {
+  listDiv = listDiv || document.getElementById('seatsList');
+  gridDiv = gridDiv || document.getElementById('seatsGrid');
   
   listDiv.innerHTML = '';
   gridDiv.innerHTML = '';
@@ -2312,9 +2466,17 @@ function renderSeatDistribution(seats, totalSeats) {
   });
   
   // Render parliament semicircle
-  // Responsive container size
-  const containerWidth = isMobileView ? Math.min(screenWidth - 40, 400) : 560;
-  const containerHeight = isMobileView ? Math.min(containerWidth * 0.6, 250) : 300;
+  // Responsive container size — on desktop this now lives in a column next
+  // to the bars rather than a full-width modal, so size it to whatever
+  // space its parent actually has (capped at 560px) instead of always 560.
+  let containerWidth;
+  if(isMobileView) {
+    containerWidth = Math.min(screenWidth - 40, 400);
+  } else {
+    const parentWidth = gridDiv.parentElement ? gridDiv.parentElement.clientWidth : 0;
+    containerWidth = Math.max(260, Math.min(parentWidth || 560, 560));
+  }
+  const containerHeight = isMobileView ? Math.min(containerWidth * 0.6, 250) : Math.round(containerWidth * 0.54);
   gridDiv.style.width = containerWidth + 'px';
   gridDiv.style.height = containerHeight + 'px';
   gridDiv.style.position = 'relative';
@@ -2542,6 +2704,15 @@ function showLanderStats(state) {
   document.getElementById('landerStatsName').innerText = state + (isElectionModal ? ' – Ergebnis' : '');
   document.getElementById('landerStatsDate').innerText = (isElectionModal ? 'Ergebnis: ' : 'Stand: ') + data[state].date;
 
+  // Same 30-day countdown chip shown on the Länder list card, mirrored here
+  // in the detail header so it stays visible once you drill into a state.
+  const countdownSlot = document.getElementById('landerStatsCountdown');
+  countdownSlot.innerHTML = '';
+  const upcomingElectionModal = getUpcomingElectionForState(state);
+  if(upcomingElectionModal) {
+    countdownSlot.appendChild(renderCountdownChip(upcomingElectionModal.dt));
+  }
+
   // Calculate trends: use lastElection if isElection=true, else history[0]
   const currentResults = data[state].results;
   const leModal = data[state].lastElection;
@@ -2630,12 +2801,22 @@ function showLanderStats(state) {
     bars.insertBefore(changeLabel, bars.firstChild);
   }
 
-  // Add seats button after bars
+  // Add coalition calculator button after bars
   const seatsBtn = document.createElement("button");
   seatsBtn.className = "seats-btn";
-  seatsBtn.textContent = "Sitzverteilung/Koalitionen";
+  seatsBtn.textContent = "Koalitionsrechner";
   seatsBtn.onclick = () => openSeatsModal(state, currentResults);
   bars.appendChild(seatsBtn);
+
+  // Render the seat distribution (Sitzverteilung) inline, next to the bars
+  const laenderTotalSeats = seatCounts[state] || 630;
+  const laenderSeats = calculateSeats(currentResults, laenderTotalSeats);
+  renderSeatDistribution(
+    laenderSeats,
+    laenderTotalSeats,
+    document.getElementById('landerStats-seats-list'),
+    document.getElementById('landerStats-seats-grid')
+  );
 
   // Add diagram button
   const diagramBtn = document.createElement("button");
