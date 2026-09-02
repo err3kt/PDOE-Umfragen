@@ -290,6 +290,7 @@ body.modal-open .ticker-track { animation-play-state: paused; }
   text-transform:uppercase;
   transition:width 0.3s ease;
   width:0;
+  flex-shrink:0;
   animation:none;
   position:relative;
   overflow:visible;
@@ -1902,6 +1903,24 @@ function buildStates(){
   });
 }
 
+// Bars live inside flex rows alongside a fixed-width logo and percent
+// label. A fixed px-per-percent factor (tuned for a full-width column)
+// overflows once a bar column shares space with the seat diagram, and
+// flexbox silently shrinks oversized bars down to whatever room is left —
+// so two very different percentages can end up clamped to the exact same
+// rendered width. Deriving the factor from the column's real width (and
+// the largest value actually being drawn) keeps every bar proportional
+// and inside the available space.
+function computeBarScaleFactor(containerEl, maxValue) {
+  const fixedChrome = 22 /* logo */ + 10 /* gap */ + 86 /* percent label */ + 10 /* gap */;
+  const containerWidth = containerEl ? containerEl.clientWidth : 0;
+  const available = Math.max(60, containerWidth - fixedChrome);
+  const safeMax = Math.max(maxValue || 1, 1) * 1.12; // headroom so the longest bar doesn't hug the edge
+  let factor = available / safeMax;
+  factor = Math.max(2.5, Math.min(factor, 18));
+  return factor;
+}
+
 function showState(state){
   // Opens the state detail inline, in the same view — same pattern as Städte.
   if(currentState) {
@@ -1988,20 +2007,11 @@ function showBundestag() {
     
     const b = document.createElement("div");
     b.className = "bar";
-    // Responsive scaling based on screen width
-    const screenWidth = window.innerWidth;
-    let scaleFactor;
-    
-    if (screenWidth <= 480) {
-      // Very small phones: 5px per %
-      scaleFactor = 5;
-    } else if (screenWidth <= 768) {
-      // Small tablets/large phones: 8px per %
-      scaleFactor = 8;
-    } else {
-      // Desktop: 15px per %
-      scaleFactor = 15;
-    }
+    // Scale from the bars column's actual rendered width, not the viewport —
+    // it now shares the row with the seat diagram, so a fixed px-per-% can
+    // overflow and get silently clamped by flexbox.
+    const maxEntryValue = Math.max(...entries.map(([, ev]) => ev));
+    const scaleFactor = computeBarScaleFactor(bars, maxEntryValue);
     
     // Pure proportional scaling - no minimum to show true differences
     const targetWidth = v > 0 ? (v * scaleFactor) + "px" : "0px";
@@ -2561,6 +2571,11 @@ function renderSeatDistribution(seats, totalSeats, listDiv, gridDiv) {
       dot.style.background = colors[party];
       dot.style.left = (pos.x - dotSize / 2) + 'px';
       dot.style.top = (pos.y - dotSize / 2) + 'px';
+      // CDU/CSU seats get a thin white outline so they read as a distinct
+      // bloc against neighbouring parties' dots rather than blending in.
+      if(party === 'CDU' || party === 'CDU/CSU' || party === 'CSU') {
+        dot.style.boxShadow = '0 0 0 1px rgba(255,255,255,0.85)';
+      }
       dot.title = party;
       dot.dataset.party = party;
       
@@ -2744,20 +2759,11 @@ function showLanderStats(state) {
 
     const b = document.createElement("div");
     b.className = "bar";
-    // Responsive scaling based on screen width
-    const screenWidth = window.innerWidth;
-    let scaleFactor;
-
-    if (screenWidth <= 480) {
-      // Very small phones: 5px per %
-      scaleFactor = 5;
-    } else if (screenWidth <= 768) {
-      // Small tablets/large phones: 8px per %
-      scaleFactor = 8;
-    } else {
-      // Desktop: 15px per %
-      scaleFactor = 15;
-    }
+    // Scale from the bars column's actual rendered width, not the viewport —
+    // it now shares the row with the seat diagram, so a fixed px-per-% can
+    // overflow and get silently clamped by flexbox.
+    const maxEntryValue = Math.max(...entries.map(([, ev]) => ev));
+    const scaleFactor = computeBarScaleFactor(bars, maxEntryValue);
 
     // Pure proportional scaling - no minimum to show true differences
     const targetWidth = v > 0 ? (v * scaleFactor) + "px" : "0px";
@@ -3127,7 +3133,11 @@ function showCityStats(city) {
     logoEl.src = (typeof logos !== 'undefined' && logos[party]) || '';
     const bar = document.createElement('div');
     bar.className = 'bar';
-    const scaleFactor = window.innerWidth <= 480 ? 5 : window.innerWidth <= 768 ? 7 : 12;
+    // Scale from the bars column's actual rendered width rather than a
+    // fixed px-per-% — see computeBarScaleFactor for why the fixed
+    // factor could make differently-sized bars clamp to the same width.
+    const maxEntryValue = Math.max(...entries.map(([, ev]) => ev));
+    const scaleFactor = computeBarScaleFactor(barsDiv, maxEntryValue);
     const col = cityColors[party] || '#666';
     bar.style.background = col;
     bar.style.color = (party === 'FDP') ? '#000' : '#fff';
